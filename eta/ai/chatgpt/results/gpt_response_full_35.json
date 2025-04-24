@@ -1,0 +1,39 @@
+{
+  "id": "chatcmpl-BNeB8FiGu8RToC6mNgSvBBoCpue4K",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "### 桃樂絲露營區\n1. 帳篷\n2. 服務人員\n3. 環境\n4. 洗澡\n5. 開心農場\n6. 空拍攝影\n7. 廁所\n8. 地理位置\n9. 熱水淋浴\n10. 晚餐食材\n\n### 斷橋部落．輕奢露營\n1. 活動\n2. 服務人員\n3. 帳篷\n4. 環境\n5. 空拍服務\n6. 鞭炮\n7. 烤肉\n8. 露水\n9. 食材\n10. 早餐\n\n### 一畝稻田露營區\n1. 帳篷\n2. 環境\n3. 衛浴\n4. 冷暖氣\n5. 洗手台\n6. 露營區\n7. 洗碗\n8. 活動\n9. 棉花糖DIY\n10. 防蚊液",
+        "refusal": null,
+        "role": "assistant",
+        "annotations": [],
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1744975690,
+  "model": "gpt-3.5-turbo-0125",
+  "object": "chat.completion",
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 324,
+    "prompt_tokens": 10629,
+    "total_tokens": 10953,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": 0,
+      "audio_tokens": 0,
+      "reasoning_tokens": 0,
+      "rejected_prediction_tokens": 0
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cached_tokens": 0
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "id": "chatcmpl-BPhC0F4lAGuzLBCeEpHCms9TUsq8l",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "在遙遠的山谷中，有一位名叫艾莉的小女孩，她擁有一個神奇的能力：能與動物交談。某日，山谷裡的河水突然乾涸，動植物面臨困境。艾莉決心尋找原因，於是她與她的動物朋友們展開了冒險。經過重重險阻，他們發現山頂的巨石堵住了水源。艾莉和動物們齊心協力，終於移開巨石，讓清澈的河水重新流淌。村莊和山谷恢復生機，艾莉也成為了大家心目中的小英雄。",
+        "refusal": null,
+        "role": "assistant",
+        "annotations": [],
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1745463932,
+  "model": "gpt-4o-2024-08-06",
+  "object": "chat.completion",
+  "service_tier": "default",
+  "system_fingerprint": "fp_90122d973c",
+  "usage": {
+    "completion_tokens": 161,
+    "prompt_tokens": 26,
+    "total_tokens": 187,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": 0,
+      "audio_tokens": 0,
+      "reasoning_tokens": 0,
+      "rejected_prediction_tokens": 0
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cached_tokens": 0
+    }
+  }
+}
