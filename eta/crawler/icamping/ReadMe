@@ -1,0 +1,36 @@
+需要讀取的欄位
+
+
+Camp HTML 結構
+營地名稱 (name) h1.h1-responsive
+營地地理資訊 (info) div.text-md-left.mt-4
+  [地址        > p
+  海拔        p 
+  開放訂位日   p
+  最後可訂位日 p
+  公休日      p]
+  行政區 div.d-flex.justify-content-center
+    [區域  mdb-badge
+    縣市   mdb-badge
+    鄉鎮區]mdb-badge
+
+營區資訊 col-md-6 col-12 grey lighten-3 p-sm-5 p-2 bo-r
+  X空位查詢
+  X定位請先登入
+  X愛露營客服
+  X營地客服
+  [營區介紹] (about) p>p>span
+  [相關設施] (related) div.modal-content >div>div
+  [營區須知] (readme)
+  XFacebook
+  X官方影片
+  X交通資訊
+
+空位狀況 (locations)#table
+  [營地名稱,總數量,剩餘]
+
+區域介紹 (services)
+    區域名稱
+    價格
+    更多資訊 <app-stuff>
+      資訊 div.card.mx-1 > > mdb-card-body

@@ -1,0 +1,32 @@
+呼叫AskGPT物件，定義參數後，讓物件傳送並接收openai.chat的回應
+使用聊天模型 client.chat.completions
+支援 gpt-4o, gpt-3.5-turbo
+
+使用方法
+建立物件後設定參數
+呼叫chat()會回傳json
+
+設定參數
+1. model      : 模型名稱("gpt-4o", "gpt-3.5-turbo")未列上的可以用，但是不能計費
+2. _Key       : API金鑰
+3. max_token  : 限制openai 最大回應的字元數量
+4. temperature: 模型的自由度，愈接近1 愈即興發揮
+5. _message    : 聊天模型必須要有角色設定 (!!!但請不要直接修改這個值!!!)
+Message格式：
+messages = [
+    {"role": "system", "content": "你是個分析師，專門解釋數據。"},
+    {"role": "user", "content": "請幫我分析這份數據報表的重點。"}
+]
+
+使用範例：
+# 可以在初始化時直接指定，或是事後逐項設定
+chat_gpt = ChatWithGPT(
+    model = "gpt-4o",
+    _key = "your-api-key",
+    max_token = 500,
+    temperature = 0.5
+)
+chat_gpt.set_message("system", "你是吟遊由詩人")
+chat_gpt.set_message("user", "說個故事給我聽")
+chat_gpt.expectBill(True)
+response = chat_gpt.chat()

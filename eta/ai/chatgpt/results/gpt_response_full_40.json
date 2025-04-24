@@ -1,0 +1,39 @@
+{
+  "id": "chatcmpl-BNe9GIGqTXfFOi98EVaP7F6Jm5jQt",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "從這些評論中，我找出了排名前十的設施、物品或名詞關鍵詞：\n\n1. 帳篷\n2. 熱水\n3. 服務人員\n4. 衛浴\n5. 營區\n6. 食材\n7. 空拍\n8. 洗手台\n9. 燈條\n10. 麻糬活動\n\n這些詞彙反映了露營場地的常見設施、服務和活動。",
+        "refusal": null,
+        "role": "assistant",
+        "annotations": [],
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1744975574,
+  "model": "gpt-4o-2024-08-06",
+  "object": "chat.completion",
+  "service_tier": "default",
+  "system_fingerprint": "fp_f5bdcc3276",
+  "usage": {
+    "completion_tokens": 111,
+    "prompt_tokens": 6686,
+    "total_tokens": 6797,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": 0,
+      "audio_tokens": 0,
+      "reasoning_tokens": 0,
+      "rejected_prediction_tokens": 0
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cached_tokens": 0
+    }
+  }
+}
