@@ -1,0 +1,36 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": "小女孩莉莉在海邊撿到一個貝殼，湊近耳朵，聽見了海浪的低語。她閉上眼睛，彷彿置身於深藍色的海底世界，與魚兒嬉戲，與海龜共舞。突然，一陣海風吹來，將她拉回現實。莉莉睜開眼睛，陽光灑在貝殼上，閃爍著光芒。她知道，這個小小的貝殼，藏著一個屬於她的秘密海洋。\n"
+          }
+        ]
+      },
+      "finish_reason": "STOP",
+      "avg_logprobs": -0.3039796738397507
+    }
+  ],
+  "usage_metadata": {
+    "prompt_token_count": 11,
+    "candidates_token_count": 105,
+    "total_token_count": 116,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 11
+      }
+    ],
+    "candidates_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 105
+      }
+    ]
+  },
+  "model_version": "gemini-2.0-flash",
+  "create_time": "2025-04-25T10:48:54.066579Z",
+  "response_id": "lmgLaJOIBNjJ-O4P9o2R2Qs"
+}
