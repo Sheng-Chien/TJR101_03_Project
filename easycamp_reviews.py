@@ -1,7 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
 import re
+import random
+import time
 import json
+
 
 headers = {
         "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"}
@@ -89,42 +92,71 @@ def get_customer_reviews(block):
 
 def get_one_place_reviews(url):
     """獲得單一露營場評分"""
+    all_reviews = []
+    current_url = url
+
     response = requests.get(url,headers=headers)
     if response.status_code != 200:
         print(f"請求失敗，status code: {response.status_code}")
+        return None
     soup = BeautifulSoup(response.text, "html.parser")
+
+    camp_name = get_camp_name(soup)
+    overall_stars = get_overall_stars(soup)
+    review_count = get_review_count(soup)
+    traffic, bathroom, view, service, facility = get_score(soup)
     
-    review_container = soup.select_one("#tab11")
-    all_reviews = []
-    if review_container: #如果有評論區
-        review_blocks = review_container.select("div.row")
-        for block in review_blocks:
-            name = get_customer_name(block)
-            checkin_date, review_date = get_dates(block)
-            customer_rating = get_customer_rating(block)
-            review_title, review_content = get_customer_reviews(block)
-            review_data = {
-                "姓名": name,
-                "入住日期": checkin_date,
-                "評論日期": review_date,
-                "評分": customer_rating,
-                "評論標題": review_title,
-                "評論內容": review_content,    
-            }
-            all_reviews.append(review_data)
-    
+    # 開始爬每一頁的評論
+    while current_url:
+        res = requests.get(current_url,headers=headers)
+        if res.status_code != 200:
+            print(f"請求失敗，status code: {res.status_code}")
+            break
+        soup = BeautifulSoup(res.text, "html.parser")
+        review_container = soup.select_one("#tab11")
+
+        if review_container: #如果有評論區
+            review_blocks = review_container.select("div.row")
+            for block in review_blocks:
+                customer_name = get_customer_name(block)
+                checkin_date, review_date = get_dates(block)
+                customer_rating = get_customer_rating(block)
+                review_title, review_content = get_customer_reviews(block)
+                review_data = {
+                    "姓名": customer_name,
+                    "入住日期": checkin_date,
+                    "評論日期": review_date,    
+                    "評分": customer_rating,
+                    "評論標題": review_title,
+                    "評論內容": review_content,    
+                }
+                all_reviews.append(review_data)
+                time.sleep(random.uniform(1, 3))
+                print(f"{camp_name}有{len(all_reviews)}筆評論")
+        #下一頁
+        next_page_link = None
+        pagination = soup.select_one("ul.pagination")
+        if pagination:
+            next_links = pagination.select("li a") 
+            for link in next_links:
+                if "下一頁" in link.text:
+                    href = link.get("href")
+                    if href:
+                        next_page_link = "https://www.easycamp.com.tw" + href
+                    break
+        current_url = next_page_link             
+
     return {
-        "營地名稱": get_camp_name(soup),
-        "營地總星等": get_overall_stars(soup),
-        "評論總數": get_review_count(soup),
-        "交通便利度": get_score(soup)[0],
-        "衛浴整潔度": get_score(soup)[1],
-        "景觀滿意度": get_score(soup)[2],
-        "服務品質": get_score(soup)[3],
-        "設施完善度":get_score(soup)[4],
-        "顧客評論":all_reviews
-        }
-#評論翻頁
+              "營地名稱": camp_name,
+              "營地總星等": overall_stars,
+              "評論總數": review_count,
+              "交通便利度": traffic,
+              "衛浴整潔度": bathroom,
+              "景觀滿意度": view,
+              "服務品質": service,
+              "設施完善度":facility,
+              "顧客評論":all_reviews
+              }
 
 
 
@@ -136,9 +168,9 @@ def save_to_json(data, filename):
 
 
 
-url = "https://www.easycamp.com.tw/store/purchase_rank/2649"
+url = "https://www.easycamp.com.tw/store/purchase_rank/2602" 
 review_data = get_one_place_reviews(url)
-save_to_json(review_data, "no_reviews.json")
+save_to_json(review_data, "try_reviews.json")
 
 
 
