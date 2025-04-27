@@ -8,8 +8,9 @@ headers = {
         "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"}
 
 urlstart = "https://www.easycamp.com.tw"
-#主頁 ➜ 各分頁(各地區的露營場列表) ➜ 露營場 ➜ 詳細內容
-# 1. 抓出所有縣市的頁面連結
+
+#各分頁(各地區的露營場列表) ➜ 露營場 ➜ 詳細內容
+
 
 
 # 2. 抓出一個縣市頁面中所有露營場連結
@@ -18,10 +19,8 @@ def get_camp_links(city_url):
     res = requests.get(city_url)
     soup = BeautifulSoup(res.text, "html.parser")
     links = soup.select("h2 a[href^='/Store_']")
-    #if  else: return[]
-    #print("未找到任何營地連結")
-    for link in links:
-        print(link["href"])
+    # for link in links:
+    #     print(link["href"])
     return [urlstart + link["href"] for link in links]
     
 # 3. 擷取個別露營場的詳細資訊 
@@ -31,7 +30,6 @@ def get_camp_info(soup):
     name = h1_tag.contents[0].strip()
     star_count = len(h1_tag.select("i.fa-star"))
     reviews = h1_tag.select_one("h5.icon-font-color").text.strip()
-    # info = [location, name, star_count, reviews]
     info = {
         "營地名稱": name,
         "獲得星數": star_count,
@@ -103,17 +101,12 @@ def get_one_place_info(url):
         "營地須知": get_campsite_detail(soup)
     }
 
-
-def get_one_place_reviews(url):
-    """獲得單一露營場的評論"""
-    response = requests.get(url,headers=headers)
-    soup = BeautifulSoup(response.text, "html.parser")
-    
+   
 
 
 # ========== 主程式入口 ==========
 def main():
-    city_url = "https://www.easycamp.com.tw/Camp_0_7_0.html" 
+    city_url = "https://www.easycamp.com.tw/Camp_0_2_0.html" 
     camp_urls = get_camp_links(city_url)
     all_camps = []
     for camp_url in camp_urls:
@@ -124,7 +117,7 @@ def main():
 
     print(f"共蒐集 {len(all_camps)} 筆營地資料")
     
-    with open("miaoli_camp.json", "w", encoding="utf-8") as f:
+    with open("xinbei_camp.json", "w", encoding="utf-8") as f:
         json.dump(all_camps, f, indent=4, ensure_ascii=False)
     
 
