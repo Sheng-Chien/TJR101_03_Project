@@ -24,7 +24,7 @@ class CrawlCamp():
         # 網址
         self.root_url = "https://m.icamping.app/"
         # 存檔路徑
-        self.root = ""
+        self.root = "eta/crawler/icamping/"
         self.dir_html =  self.root + "htmls/"
         self.dir_csv =  self.root + "csvs/"
         self.dir_camp =  "camps/"
@@ -288,7 +288,8 @@ class CrawlCamp():
             if data: 
                 with open(file_path_json, mode="a", encoding="utf-8") as file:
                     for d in data:
-                        json.dump(d, file, ensure_ascii=False, indent=4)
+                        # json.dump(d, file, ensure_ascii=False, indent=4)
+                        file.write(json.dumps(d, ensure_ascii=False) + "\n")
         
     def parseCampHTML(self, file_name)->dict:
 
@@ -388,7 +389,7 @@ class CrawlCamp():
         # 解析Sample.mtml提取標籤
         self.tags = self.parseTags()
 
-        file_path_json = self.dir_json + "camps.json"
+        file_path_json = self.dir_json + "camps.jsonl"
         with open(file_path_json, mode="w", encoding="utf-8") as file:
             pass
         
