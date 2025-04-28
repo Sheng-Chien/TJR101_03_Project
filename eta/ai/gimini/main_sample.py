@@ -3,18 +3,23 @@ from datetime import datetime
 from pathlib import Path
 import json
 
+key_path = Path(__file__).parent/"KEY/AI_Project_Admin.json"
 # 初始化物件
 ask_gemini = ChatWithGemini(
-    # key_path="vertexai-project.json", # 填入金鑰json檔的路徑(選填))
+    key_path=key_path, # 填入金鑰json檔的路徑(選填))
     max_tonkens=500,
     temperature=0.5,
     top_k=40,
     top_p=0.9,
 )
+# 參數都可以用ChatWithGemini.element事後設定
+# 但是設置金鑰請用函式方法
+# ask_gemini.setKey(key_path)
 
 # 設定傳送訊息
 prompt = "請用100個字說個小故事"
 # 取得回應
+response = ""
 response = ask_gemini.chat(prompt)
 
 

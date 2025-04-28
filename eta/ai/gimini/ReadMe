@@ -1,4 +1,4 @@
-!!!必須使用GCP的ADC登入，或是GCP匯出的金鑰!!!
+!!!必須使用GCP匯出的金鑰!!!
 
 使用生成式模型 GenerativeModel
 目前模型使用 "gemini-2.0-flash"
@@ -13,7 +13,7 @@ pip install google-cloud-aiplatform
 呼叫chat()會回傳 dict()
 
 設定參數
-key_path        金鑰json檔的路徑，不填入的話也可以由SDK登入自動取得金鑰
+key_path        金鑰json檔的路徑
 max_tonkens     最大回應的字元數量
 temperature     模型的自由度，愈接近1 愈即興發揮
 top_k           選前 k 名可能出現的詞彙
