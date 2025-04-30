@@ -1,12 +1,18 @@
 from pymongo import MongoClient
+from pymongo.errors import ServerSelectionTimeoutError
 
 # 建立連線
 user = "Eta"
 pw = "PassWord"
-ip = "35.221.213.83"
+ip = "104.199.214.113"
 port = "27017"
 database = "EtaDB"
-client = MongoClient(f"mongodb://{user}:{pw}@:{port}/?authSource={database}")
+try:
+    client = MongoClient(f"mongodb://{user}:{pw}@{ip}:{port}/?authSource={database}", serverSelectionTimeoutMS=3000)
+    client.admin.command("ping")  # 強制測試連線
+    print("✅ MongoDB connected!")
+except ServerSelectionTimeoutError as e:
+    print("❌ 無法連線到 MongoDB：", e)
 
 # 選擇資料庫
 db = client[database]
