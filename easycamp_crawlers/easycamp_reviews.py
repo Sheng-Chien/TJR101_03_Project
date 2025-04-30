@@ -3,7 +3,10 @@ from bs4 import BeautifulSoup
 import re
 import random
 import time
+from urllib.parse import urljoin
 import json
+
+from reviews_links import get_campsite_links,get_city_links,get_review_links
 
 
 headers = {
@@ -24,8 +27,7 @@ def get_overall_stars(soup):
         given_stars = len(all_stars.select("i.fa-star"))
         return given_stars
     return 0
-
-#評價    
+    
 def get_review_count(soup):
     """獲得評論數"""
     review_count = soup.select_one("h5.icon-font-color")
@@ -90,61 +92,61 @@ def get_customer_reviews(block):
 
 
 
-def get_one_place_reviews(url):
+def get_one_place_reviews(urls, headers):
     """獲得單一露營場評分"""
     all_reviews = []
-    current_url = url
+    base_url = "https://www.easycamp.com.tw"
+    for link in urls:
+        response = requests.get(link,headers=headers)
+        if response.status_code != 200:
+            print(f"請求失敗，status code: {response.status_code}")
+            return None
+        soup = BeautifulSoup(response.text, "html.parser")
 
-    response = requests.get(url,headers=headers)
-    if response.status_code != 200:
-        print(f"請求失敗，status code: {response.status_code}")
-        return None
-    soup = BeautifulSoup(response.text, "html.parser")
-
-    camp_name = get_camp_name(soup)
-    overall_stars = get_overall_stars(soup)
-    review_count = get_review_count(soup)
-    traffic, bathroom, view, service, facility = get_score(soup)
+        camp_name = get_camp_name(soup)
+        overall_stars = get_overall_stars(soup)
+        review_count = get_review_count(soup)
+        traffic, bathroom, view, service, facility = get_score(soup)
     
     # 開始爬每一頁的評論
-    while current_url:
-        res = requests.get(current_url,headers=headers)
-        if res.status_code != 200:
-            print(f"請求失敗，status code: {res.status_code}")
-            break
-        soup = BeautifulSoup(res.text, "html.parser")
-        review_container = soup.select_one("#tab11")
+        current_url = link
+        while current_url:
+            res = requests.get(current_url,headers=headers)
+            if res.status_code != 200:
+                print(f"請求失敗，status code: {res.status_code}")
+                break
+            soup = BeautifulSoup(res.text, "html.parser")
+            review_container = soup.select_one("#tab11")
 
-        if review_container: #如果有評論區
-            review_blocks = review_container.select("div.row")
-            for block in review_blocks:
-                customer_name = get_customer_name(block)
-                checkin_date, review_date = get_dates(block)
-                customer_rating = get_customer_rating(block)
-                review_title, review_content = get_customer_reviews(block)
-                review_data = {
-                    "姓名": customer_name,
-                    "入住日期": checkin_date,
-                    "評論日期": review_date,    
-                    "評分": customer_rating,
-                    "評論標題": review_title,
-                    "評論內容": review_content,    
-                }
-                all_reviews.append(review_data)
-                time.sleep(random.uniform(1, 3))
-                print(f"{camp_name}有{len(all_reviews)}筆評論")
-        #下一頁
-        next_page_link = None
-        pagination = soup.select_one("ul.pagination")
-        if pagination:
-            next_links = pagination.select("li a") 
-            for link in next_links:
-                if "下一頁" in link.text:
-                    href = link.get("href")
-                    if href:
-                        next_page_link = "https://www.easycamp.com.tw" + href
-                    break
-        current_url = next_page_link             
+            if review_container: #如果有評論區
+                review_blocks = review_container.select("div.row")
+                for block in review_blocks:
+                    customer_name = get_customer_name(block)
+                    checkin_date, review_date = get_dates(block)
+                    customer_rating = get_customer_rating(block)
+                    review_title, review_content = get_customer_reviews(block)
+                    review_data = {
+                        "姓名": customer_name,
+                        "入住日期": checkin_date,
+                        "評論日期": review_date,    
+                        "評分": customer_rating,
+                        "評論標題": review_title,
+                        "評論內容": review_content,    
+                    }
+                    all_reviews.append(review_data)
+                    time.sleep(random.uniform(1, 3))
+                    print(f"{camp_name}有{len(all_reviews)}筆評論")
+            #下一頁
+            next_page_link = None
+            pagination = soup.select_one("ul.pagination")
+            if pagination:
+                next_links = pagination.select("li a") 
+                for link in next_links:
+                    if "下一頁" in link.text:
+                        href = link.get("href")
+                        next_page_link = urljoin(base_url, href)
+                        break
+            current_url = next_page_link             
 
     return {
               "營地名稱": camp_name,
@@ -160,26 +162,23 @@ def get_one_place_reviews(url):
 
 
 
-def save_to_json(data, filename):
+def save_to_json(data, filename):#參數名稱?
     """存入 JSON 檔"""
     with open(filename, "w", encoding="utf-8") as f:
        json.dump(data, f, indent=4, ensure_ascii=False)
 
 
-#從露營場介紹頁面找到 評價的超連結
-#找<li role="presentation"> 底下有包含"住過露友評價"的a標籤的 href屬性
-review_link_tag = soup.find("a",string="住過露友評價") #會是像<a href="...">下一頁</a>的tag物件
-review_link = review_link_tag.get("href") #/store/purchase_rank/899
 
 
-"https://www.easycamp.com.tw/" + review_link #就是下面的url
-
-
-
-url = "https://www.easycamp.com.tw/store/purchase_rank/2602" 
-review_data = get_one_place_reviews(url)
-save_to_json(review_data, "try_reviews.json")
-
+if __name__ == "__main__":
+    url = "https://www.easycamp.com.tw/store/store_list"  # base.py 中的網址
+    headers = {
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"}
+    city_links = get_city_links(url, headers)#先取兩個縣市
+    campsite_links = get_campsite_links(city_links[:2], headers)
+    review_links = get_review_links(campsite_links, headers)
+    review_data = get_one_place_reviews(review_links, headers)
+    save_to_json(review_data, "41個露營場_reviews.json")
 
 
 
