@@ -6,6 +6,9 @@ from urllib.parse import urljoin
 
 from base import get_city_links
 
+headers = {
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"}
+
 def get_campsite_links(city_links, headers):
     """抓出一個縣市頁面中所有露營場連結""" 
     campsite_links = []
@@ -33,16 +36,12 @@ def get_campsite_links(city_links, headers):
                 print(f"抓取 {next_page} 時發生錯誤：{e}")
                 break 
                 
-        
-            
-    print(f"露營場網址{campsite_links}")
     print(f"總共有{len(campsite_links)}個露營場網址")
     return campsite_links #/Store的完整網址
 
+
 if __name__ == "__main__":
     url = "https://www.easycamp.com.tw/store/store_list"  # base.py 中的網址
-    headers = {
-        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"}
     # 先從 base.py 中取得所有縣市的連結
     city_links = get_city_links(url, headers)
     get_campsite_links(city_links, headers)

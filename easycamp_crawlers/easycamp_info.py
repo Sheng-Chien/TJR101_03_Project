@@ -9,17 +9,9 @@ headers = {
 
 urlstart = "https://www.easycamp.com.tw"
 
+from campsite_links import get_campsite_links,get_city_links
 
 
-
-
-# 2. 抓出一個縣市頁面中所有露營場連結
-# def get_camp_links(city_url):
-#     """抓出一個縣市頁面中所有露營場連結"""
-#     res = requests.get(city_url)
-#     soup = BeautifulSoup(res.text, "html.parser")
-#     links = soup.select("h2 a[href^='/Store_']") #href屬性以/Store_開頭
-#     return [urlstart + link["href"] for link in links]
     
 # 3. 擷取個別露營場的詳細資訊 
 def get_camp_info(soup):
@@ -94,33 +86,30 @@ def get_one_place_info(url):
         "營地地址": get_address(soup),
         "營地gps": get_gps(soup),
         "營地電話": get_phone(soup),
-        "營地電話": get_price(soup),
+        "營地價格": get_price(soup),
         "營區介紹": get_table_content(soup),
         "營地須知": get_campsite_detail(soup)
     }
 
    
+def save_to_json(data, filename):
+    """存入 JSON 檔"""
+    with open(filename, "w", encoding="utf-8") as f:
+       json.dump(data, f, indent=4, ensure_ascii=False)
 
 
-# ========== 主程式入口 ==========
 def main():
-    city_url = "https://www.easycamp.com.tw/Camp_0_2_0.html" 
-    camp_urls = get_camp_links(city_url)
-    all_camps = []
-    for camp_url in camp_urls:
-        print(f"處理營地：{camp_url}")
-        camp_info = get_one_place_info(camp_url) 
-        all_camps.append(camp_info)
-        time.sleep(1) 
-
-    print(f"共蒐集 {len(all_camps)} 筆營地資料")
-    
-    with open("xinbei_camp.json", "w", encoding="utf-8") as f:
-        json.dump(all_camps, f, indent=4, ensure_ascii=False)
-    
-
+    url = "https://www.easycamp.com.tw/store/store_list"  # base.py 中的網址
+    headers = {
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"}
+    camps_data = []
+    city_links = get_city_links(url, headers)
+    campsite_links = get_campsite_links(city_links[:2], headers)
+    for link in campsite_links:
+        data = get_one_place_info(link)
+        camps_data.append(data)
+        time.sleep(1)
+    save_to_json(camps_data, "露營場_info.json")
 
 if __name__ == "__main__":
     main()
-
-

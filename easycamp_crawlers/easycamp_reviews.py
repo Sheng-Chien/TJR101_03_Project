@@ -12,7 +12,6 @@ from reviews_links import get_campsite_links,get_city_links,get_review_links
 headers = {
         "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"}
 
-#住過露友評價網站 :
 def get_camp_name(soup):
     """營地基本資訊""" 
     h1_tag =  soup.select_one("h1")
@@ -83,11 +82,9 @@ def get_customer_rating(soup):
 def get_customer_reviews(block):
     """評論內容""" 
     title_tag = block.select_one("div.title-font-size.english-break-word")
-    content_tag = block.select_one("div.content-font-size.english-break-word")
-        
+    content_tag = block.select_one("div.content-font-size.english-break-word")    
     review_title = title_tag.text.strip()if title_tag else ""
     review_content = content_tag.text.strip()if content_tag else ""
-
     return review_title,review_content
 
 
@@ -108,7 +105,7 @@ def get_one_place_reviews(urls, headers):
         review_count = get_review_count(soup)
         traffic, bathroom, view, service, facility = get_score(soup)
     
-    # 開始爬每一頁的評論
+        # 評論頁翻頁
         current_url = link
         while current_url:
             res = requests.get(current_url,headers=headers)
@@ -134,8 +131,7 @@ def get_one_place_reviews(urls, headers):
                         "評論內容": review_content,    
                     }
                     all_reviews.append(review_data)
-                    time.sleep(random.uniform(1, 3))
-                    print(f"{camp_name}有{len(all_reviews)}筆評論")
+                    print(f"有{len(all_reviews)}筆評論")
             #下一頁
             next_page_link = None
             pagination = soup.select_one("ul.pagination")
@@ -146,7 +142,8 @@ def get_one_place_reviews(urls, headers):
                         href = link.get("href")
                         next_page_link = urljoin(base_url, href)
                         break
-            current_url = next_page_link             
+            current_url = next_page_link   
+            time.sleep(random.uniform(1, 3))          
 
     return {
               "營地名稱": camp_name,
@@ -160,8 +157,6 @@ def get_one_place_reviews(urls, headers):
               "顧客評論":all_reviews
               }
 
-
-
 def save_to_json(data, filename):#參數名稱?
     """存入 JSON 檔"""
     with open(filename, "w", encoding="utf-8") as f:
@@ -169,18 +164,16 @@ def save_to_json(data, filename):#參數名稱?
 
 
 
-
-if __name__ == "__main__":
+def main():
     url = "https://www.easycamp.com.tw/store/store_list"  # base.py 中的網址
-    headers = {
-        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"}
-    city_links = get_city_links(url, headers)#先取兩個縣市
+    city_links = get_city_links(url, headers)
     campsite_links = get_campsite_links(city_links[:2], headers)
     review_links = get_review_links(campsite_links, headers)
     review_data = get_one_place_reviews(review_links, headers)
-    save_to_json(review_data, "41個露營場_reviews.json")
+    save_to_json(review_data, "露營場_reviews.json")
 
-
+if __name__ == "__main__":
+    main()
 
 
 
