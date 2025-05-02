@@ -1,3 +1,4 @@
+MongoDB
 每個人都有自己的資料庫
 只能對自己的資料庫做異動(新增，修改，刪除)
 可以對所有人的資料庫查詢
@@ -15,4 +16,19 @@ Willy,    WillyDB,    PassWord
 Yahsuan,  YahsuanDB,  PassWord
 
 連線方法
-connection_demo.py
+mongo_connection_demo.py
+
+
+
+MySQL
+測試用主機
+host: 104.199.214.113:3307
+user: test
+password: PassWord_1
+
+連線方法：
+mysql_connection_demo.py
+
+
+資料連線mysql：
+推薦使用 SQLAlchemy , select 查詢後放入 pandas
