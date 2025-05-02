@@ -12,5 +12,5 @@ for file in files:
     with open(file_path, mode="r", encoding="utf-8") as file:
         data = json.load(file)
         response = data["candidates"][0]["content"]["parts"][0]["text"]
-        print(file)
+        # print(file)
         print(response)

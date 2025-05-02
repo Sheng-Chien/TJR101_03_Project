@@ -3,22 +3,28 @@
 # current_dir = os.path.dirname(os.path.abspath(__file__))
 # external_lib_path = os.path.join(current_dir, "ai/gimini")
 # sys.path.insert(0, external_lib_path)
-
-from ai.gemini.chatWithGemini import ChatWithGemini
+import sys
 from pathlib import Path
 from datetime import datetime
 import json
 import re
 
-def extract_leading_chinese(text):
-    match = re.match(r'^[\u4e00-\u9fff]+', text)
-    return match.group(0) if match else None
+def findParentDirPath(current_path, target_dir):
+    current = Path(current_path).resolve()
+    while current != current.parent:  # 直到根目錄
+        target = current / target_dir
+        if target.exists() and target.is_dir():
+            return target
+        current = current.parent
+    return None
 
 
 def main():
 
-    file_path = Path(__file__).parent / Path("crawler/icamping/jsons/camps.jsonl")
-    save_path = Path(__file__).parent / Path("results/classfied.json")
+    root_dir = findParentDirPath(Path(__file__),"eta")
+    sys.path.insert(0,str(root_dir) )
+    file_path = root_dir / Path("crawler/icamping/jsons/camps.jsonl")
+    save_path = Path(__file__).parent / Path("results/classfied_extract.json")
 
     final_data=[]
     # 不必用AI, 字串分析部分
