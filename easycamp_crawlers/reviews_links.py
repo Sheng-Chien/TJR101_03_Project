@@ -26,5 +26,5 @@ def get_review_links(campsite_links, headers):
 if __name__ == "__main__":
     url = "https://www.easycamp.com.tw/store/store_list"  # base.py 中的網址
     city_links = get_city_links(url, headers)#先取兩個縣市
-    campsite_links = get_campsite_links(city_links[:2], headers)
+    campsite_links = get_campsite_links(city_links, headers)
     get_review_links(campsite_links, headers)

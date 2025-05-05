@@ -4,6 +4,7 @@ import re
 import random
 import time
 from urllib.parse import urljoin
+from pathlib import Path
 import json
 
 from reviews_links import get_campsite_links,get_city_links,get_review_links
@@ -89,26 +90,26 @@ def get_customer_reviews(block):
 
 
 
-def get_one_place_reviews(urls, headers):
+def get_one_place_reviews(link, headers):
     """獲得單一露營場評分"""
-    all_reviews = []
+    #all_reviews = []
     base_url = "https://www.easycamp.com.tw"
-    for link in urls:
+    #for link in urls:
+    try:
         response = requests.get(link,headers=headers)
         if response.status_code != 200:
             print(f"請求失敗，status code: {response.status_code}")
             return None
         soup = BeautifulSoup(response.text, "html.parser")
-
         camp_name = get_camp_name(soup)
         overall_stars = get_overall_stars(soup)
         review_count = get_review_count(soup)
         traffic, bathroom, view, service, facility = get_score(soup)
-    
+        all_reviews = []
         # 評論頁翻頁
         current_url = link
         while current_url:
-            res = requests.get(current_url,headers=headers)
+            res = requests.get(current_url, headers=headers)
             if res.status_code != 200:
                 print(f"請求失敗，status code: {res.status_code}")
                 break
@@ -145,7 +146,8 @@ def get_one_place_reviews(urls, headers):
             current_url = next_page_link   
             time.sleep(random.uniform(1, 3))          
 
-    return {
+        #收集一營地之完整評論資訊
+        rating_data = {
               "營地名稱": camp_name,
               "營地總星等": overall_stars,
               "評論總數": review_count,
@@ -155,7 +157,13 @@ def get_one_place_reviews(urls, headers):
               "服務品質": service,
               "設施完善度":facility,
               "顧客評論":all_reviews
-              }
+        }
+        return rating_data
+    
+    except Exception as e:
+        print(f"抓取 {link} 時發生錯誤：{e}")
+        return None
+
 
 def save_to_json(data, filename):#參數名稱?
     """存入 JSON 檔"""
@@ -167,10 +175,39 @@ def save_to_json(data, filename):#參數名稱?
 def main():
     url = "https://www.easycamp.com.tw/store/store_list"  # base.py 中的網址
     city_links = get_city_links(url, headers)
-    campsite_links = get_campsite_links(city_links[:2], headers)
+    campsite_links = get_campsite_links(city_links, headers)
     review_links = get_review_links(campsite_links, headers)
-    review_data = get_one_place_reviews(review_links, headers)
-    save_to_json(review_data, "露營場_reviews.json")
+
+    # 使用 pathlib 定義 checkpoint 檔案路徑
+    checkpoint_file = Path("easycamp_checkpoint.json")
+    all_data = []
+     # 若已有 checkpoint，先載入已經儲存的資料
+    if checkpoint_file.exists():
+        with open(checkpoint_file, "r", encoding="utf-8") as f:
+            all_data = json.load(f)
+   
+
+    processed_names = {camp["營地名稱"] for camp in all_data}
+    for i, link in enumerate(review_links):
+        print(f"\n🔍 正在處理第 {i+1} 筆，共 {len(review_links)} 筆")
+    #for link in review_links:
+        # 判斷是否已經處理過這個露營場
+        camp_preview = get_camp_name(BeautifulSoup(requests.get(link, headers=headers).text, "html.parser"))
+        if camp_preview in processed_names:
+            print(f"✅ 已處理過 {camp_preview}，略過")
+            continue
+
+        camp_data = get_one_place_reviews(link, headers)
+        if camp_data:
+            all_data.append(camp_data)
+
+            # 即時寫入 checkpoint
+            with open(checkpoint_file, "w", encoding="utf-8") as f:
+                json.dump(all_data, f, indent=4, ensure_ascii=False)
+            print(f"儲存 {camp_data['營地名稱']} 成功")
+
+    # review_data = get_one_place_reviews(review_links, headers)
+    #save_to_json(review_data, "easycamp_reviews.json")
 
 if __name__ == "__main__":
     main()

@@ -104,12 +104,12 @@ def main():
         "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"}
     camps_data = []
     city_links = get_city_links(url, headers)
-    campsite_links = get_campsite_links(city_links[:2], headers)
+    campsite_links = get_campsite_links(city_links, headers)
     for link in campsite_links:
         data = get_one_place_info(link)
         camps_data.append(data)
         time.sleep(1)
-    save_to_json(camps_data, "露營場_info.json")
+    save_to_json(camps_data, "easycamp_info.json")
 
 if __name__ == "__main__":
     main()
