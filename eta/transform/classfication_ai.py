@@ -6,6 +6,7 @@ from pathlib import Path
 from datetime import datetime
 import json
 import os
+import time
 
 def findParentDirPath(current_path, target_dir):
     current = Path(current_path).resolve()
@@ -48,15 +49,15 @@ def main():
         for line in file:
             i += 1
             
-            # 測試用，跳著選，不要每次都選一樣的
-            if i % 3 !=0:
-                continue
-            else:
-                j += 1
+            # # 測試用，跳著選，不要每次都選一樣的
+            # if i % 3 !=0:
+            #     continue
+            # else:
+            #     j += 1
 
             # 測試用，只執行幾次
-            if j == 5:
-                break
+            # if i == 100:
+            #     break
 
 
             # 每個營區都是一行
@@ -65,7 +66,8 @@ def main():
             # checkpoint, 如果檔案已存在則跳過, 執行下一個營區執行下一個營區
             if camp["name"] in files:
                 pass # 如果不重複執行已有的檔案，取消continue的註解
-                # continue
+                continue
+            time.sleep(0.5)
 
             # 取出所有設備並清理空白節省token
             related= dict()
