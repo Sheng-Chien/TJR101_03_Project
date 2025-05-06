@@ -68,7 +68,7 @@ def main():
     df_merge["Address_ratio"] = df_merge["Address"].combine(df_merge["Address_similar"], lambda x, y: fuzz.partial_ratio(x,y))
     
     uploadMYSQL(df_merge)
-    # df_merge.to_csv(result_path, encoding="utf-8")
+    df_merge.to_csv(result_path, encoding="utf-8")
 
     # df_same = df_merge[ (df_merge["Campsite_ratio"] > 60) & (df_merge["Address_ratio"] > 70)    ]
     # df_same = df_same[ (df_same["Campsite_ratio"] < 70 ) & (df_same["Address_ratio"] > 70)    ]
