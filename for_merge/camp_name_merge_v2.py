@@ -8,6 +8,7 @@ from sqlalchemy import create_engine
 
 
 def getAllCSVtoDF()->pd.DataFrame:
+    """取得同資料夾下的所有.cxv檔，合併為一張總表，並以DataFrame回傳"""
     # 要排除的檔名集合
     exclude_files = {"result.csv", "same.csv"}
 
@@ -34,7 +35,7 @@ def jaccard_similarity(text1, text2):
     return len(intersection) / len(union)
 
 def sklearn_similarity(text1, text2):
-# 自訂 jieba 分詞給 CountVectorizer 使用
+    # 自訂 jieba 分詞給 CountVectorizer 使用
     def jieba_tokenizer(text):
         return list(jieba.cut(text))
 
@@ -49,6 +50,10 @@ def sklearn_similarity(text1, text2):
     return cos_sim
 
 def findTopSimilar(s:pd.Series, func):
+    """
+    找出最相似的n 個字串, 做出展平的對照表\n
+    原始字串idx, 相似字串idx, 分數 
+    """
     idx_similar = []
 
     # 依序取出每一個名字
@@ -56,8 +61,9 @@ def findTopSimilar(s:pd.Series, func):
         # 比對每一個名字並計算出相似度
         ratio = s.apply(lambda x: func(name, x))
         # 只取前 5個，並轉成list
-        # top 的index 對應於最大的index
-        top = ratio.nlargest(5).to_dict()
+        # top 的index 對應於分數最高的index{ 378: 0.73, 224: 0.66, ....}
+        n=5
+        top = ratio.nlargest(n).to_dict()
         idx_similar.append(top)
         # idx_similar.append()
     
@@ -82,6 +88,7 @@ def findTopSimilar(s:pd.Series, func):
 
 
 def saveFile(df:pd.DataFrame, path:Path):
+    """儲存.csv 到本機"""
     path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(
         path,
@@ -89,20 +96,20 @@ def saveFile(df:pd.DataFrame, path:Path):
     )
 
 def uploadMYSQL(df:pd.DataFrame, table:str):
+    """上傳到mysql server 取代原本table"""
     engine = create_engine("mysql+pymysql://test:PassWord_1@104.199.214.113:3307/eta", echo=True)
     df.to_sql(name=table, con=engine, if_exists='replace', index=False)
 
 
-def main():
-    df_merged = getAllCSVtoDF()
-    # df_merged = df_merged.head(30)
-    
+def scoring(df_merged:pd.DataFrame):
+    # 存檔資料夾
     file_dir = Path(__file__).parent/"results"
+
+    # 儲存基底檔案
     saveFile(df_merged, file_dir/"base.csv")
-    return
     uploadMYSQL(df_merged.reset_index(names="idx"), "base")
-    # return
     
+    # 分別計算分數後寫入檔案並上傳
     print("fuzz")
     df = findTopSimilar(df_merged["Campsite"], fuzz.partial_ratio)
     saveFile(df, file_dir/"fuzz.csv")
@@ -116,9 +123,15 @@ def main():
     print("sklearn")
     df = findTopSimilar(df_merged["Campsite"], sklearn_similarity)
     saveFile(df, file_dir/"sklearn.csv")
-    uploadMYSQL(df, "sklearn")
+    uploadMYSQL(df, "sklearn")    
+
+def main():
+    df_merged = getAllCSVtoDF()
+    # df_merged = df_merged.head(30)
+
+    # 計算分數並存檔
+    scoring(df_merged)
     
-    # print(df)
 
 if __name__ == "__main__":
     main()
