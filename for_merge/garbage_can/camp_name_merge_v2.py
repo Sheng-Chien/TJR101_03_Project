@@ -32,7 +32,7 @@ def jaccard_similarity(text1, text2):
     
     if not union:
         return 0.0
-    return len(intersection) / len(union)
+    return len(intersection) / len(union) * 100
 
 def sklearn_similarity(text1, text2):
     # 自訂 jieba 分詞給 CountVectorizer 使用
@@ -46,7 +46,7 @@ def sklearn_similarity(text1, text2):
     X = vectorizer.fit_transform([text1, text2])
 
     # 計算餘弦相似度
-    cos_sim = cosine_similarity(X[0], X[1]).item()
+    cos_sim = cosine_similarity(X[0], X[1]).item() * 100
     return cos_sim
 
 def findTopSimilar(s:pd.Series, func):
@@ -77,13 +77,13 @@ def findTopSimilar(s:pd.Series, func):
     df_exploded = df_exploded.explode('similars')
 
     # 拆成兩欄 key 和 value
-    df_exploded[['fk', 'ratio']] = pd.DataFrame(df_exploded['similars'].tolist(), index=df_exploded.index)
+    df_exploded[['similar_idx', 'ratio']] = pd.DataFrame(df_exploded['similars'].tolist(), index=df_exploded.index)
 
     # 移除原始 dict 欄
     df_exploded = df_exploded.drop(columns='similars')
 
     df_exploded.drop(columns="Campsite", inplace=True)
-    df_exploded.reset_index(names="idx", inplace=True)
+    df_exploded.reset_index(names="base_idx", inplace=True)
     return df_exploded
 
 
@@ -113,21 +113,22 @@ def scoring(df_merged:pd.DataFrame):
     print("fuzz")
     df = findTopSimilar(df_merged["Campsite"], fuzz.partial_ratio)
     saveFile(df, file_dir/"fuzz.csv")
-    uploadMYSQL(df, "fuzz")
+    uploadMYSQL(df.reset_index(names="idx"), "fuzz")
 
     print("jaccard")
     df = findTopSimilar(df_merged["Campsite"], jaccard_similarity)
     saveFile(df, file_dir/"jaccard.csv")
-    uploadMYSQL(df, "jaccard")
+    uploadMYSQL(df.reset_index(names="idx"), "jaccard")
 
     print("sklearn")
     df = findTopSimilar(df_merged["Campsite"], sklearn_similarity)
     saveFile(df, file_dir/"sklearn.csv")
-    uploadMYSQL(df, "sklearn")    
+    uploadMYSQL(df.reset_index(names="idx"), "sklearn")    
 
 def main():
     df_merged = getAllCSVtoDF()
     # df_merged = df_merged.head(30)
+
 
     # 計算分數並存檔
     scoring(df_merged)
