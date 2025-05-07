@@ -2,6 +2,10 @@ import jieba
 from rapidfuzz import fuzz
 import pandas as pd
 from pathlib import Path
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from sqlalchemy import create_engine
+
 
 def getAllCSVtoDF()->pd.DataFrame:
     # 要排除的檔名集合
@@ -18,6 +22,31 @@ def getAllCSVtoDF()->pd.DataFrame:
     return df_merge
 
 
+def jaccard_similarity(text1, text2):
+    words1 = set(jieba.cut(text1))
+    words2 = set(jieba.cut(text2))
+    
+    intersection = words1 & words2
+    union = words1 | words2
+    
+    if not union:
+        return 0.0
+    return len(intersection) / len(union)
+
+def sklearn_similarity(text1, text2):
+# 自訂 jieba 分詞給 CountVectorizer 使用
+    def jieba_tokenizer(text):
+        return list(jieba.cut(text))
+
+    # 初始化 CountVectorizer（用 jieba 當 tokenizer）
+    vectorizer = CountVectorizer(tokenizer=jieba_tokenizer)
+
+    # 將兩段文字轉成詞頻向量
+    X = vectorizer.fit_transform([text1, text2])
+
+    # 計算餘弦相似度
+    cos_sim = cosine_similarity(X[0], X[1]).item()
+    return cos_sim
 
 def findTopSimilar(s:pd.Series, func):
     idx_similar = []
@@ -52,9 +81,6 @@ def findTopSimilar(s:pd.Series, func):
     return df_exploded
 
 
-def similarJieba():
-    pass
-
 def saveFile(df:pd.DataFrame, path:Path):
     path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(
@@ -62,14 +88,37 @@ def saveFile(df:pd.DataFrame, path:Path):
         encoding="utf-8",
     )
 
+def uploadMYSQL(df:pd.DataFrame, table:str):
+    engine = create_engine("mysql+pymysql://test:PassWord_1@104.199.214.113:3307/eta", echo=True)
+    df.to_sql(name=table, con=engine, if_exists='replace', index=False)
+
+
 def main():
     df_merged = getAllCSVtoDF()
-    df_merged = df_merged.head(30)
+    # df_merged = df_merged.head(30)
+    
+    file_dir = Path(__file__).parent/"results"
+    saveFile(df_merged, file_dir/"base.csv")
+    return
+    uploadMYSQL(df_merged.reset_index(names="idx"), "base")
+    # return
+    
+    print("fuzz")
     df = findTopSimilar(df_merged["Campsite"], fuzz.partial_ratio)
+    saveFile(df, file_dir/"fuzz.csv")
+    uploadMYSQL(df, "fuzz")
+
+    print("jaccard")
+    df = findTopSimilar(df_merged["Campsite"], jaccard_similarity)
+    saveFile(df, file_dir/"jaccard.csv")
+    uploadMYSQL(df, "jaccard")
+
+    print("sklearn")
+    df = findTopSimilar(df_merged["Campsite"], sklearn_similarity)
+    saveFile(df, file_dir/"sklearn.csv")
+    uploadMYSQL(df, "sklearn")
     
-    with open()
-    
-    print(df)
+    # print(df)
 
 if __name__ == "__main__":
     main()
