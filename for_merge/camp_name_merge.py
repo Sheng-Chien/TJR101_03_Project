@@ -1,6 +1,6 @@
 from pathlib import Path
 import pandas as pd
-from rapidfuzz import fuzz
+# from rapidfuzz import fuzz
 import json
 import pymysql
 from sqlalchemy import create_engine
@@ -17,19 +17,19 @@ def findSimilarIdx(s:pd.Series):
     s = s.where( s.str.len() > 8, s.str.replace("露營", "", regex=False) )
 
     # bubble sort like 雙層迴圈
-    for i, name in s.items():
-        max_score = -1
-        best_idx = -1
-        for j, other_name in s.items():
-            # 自己不比較
-            if i == j:
-                continue
-            score = fuzz.partial_ratio(name, other_name)
-            if score > max_score:
-                max_score = score
-                best_idx = j
-        # 找出最佳解後存入 list 中
-        similar_idx.append(best_idx)
+    # for i, name in s.items():
+    #     max_score = -1
+    #     best_idx = -1
+    #     for j, other_name in s.items():
+    #         # 自己不比較
+    #         if i == j:
+    #             continue
+    #         score = fuzz.partial_ratio(name, other_name)
+    #         if score > max_score:
+    #             max_score = score
+    #             best_idx = j
+    #     # 找出最佳解後存入 list 中
+    #     similar_idx.append(best_idx)
         
     # print(similar_idx)
     return pd.Series(similar_idx)
@@ -54,6 +54,8 @@ def main():
     # 組成 dataframe
     df_merge = pd.concat(df_list, ignore_index=True)
     # print(df_merge)
+    df_merge.to_csv(result_path, encoding="utf-8")
+    return
     camp_name = df_merge["Campsite"]
     similar_camp_idx = findSimilarIdx(camp_name)
     # print(silimar_camp_idx)
