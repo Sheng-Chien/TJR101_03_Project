@@ -78,7 +78,7 @@ def addressNF(text:str):
     # 將門牌正規為阿拉伯數字
     text = re.sub(r'(\d+)-(\d+)', r'\1之\2', text)
     # 繁簡統一
-    text = text.replace("台","臺")
+    text = text.replace("臺","台")
     
     return text
 
