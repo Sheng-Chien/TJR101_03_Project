@@ -112,4 +112,12 @@ values
     ("東區", "花蓮縣"),
     ("東區", "台東縣");
 
-select * from county;
+
+insert into
+	platform(platform_name)
+values
+	("Google_map"),
+    ("痞客邦"),
+    ("ETtoday旅遊雲"),
+    ("露營樂"),
+    ("愛露營");
