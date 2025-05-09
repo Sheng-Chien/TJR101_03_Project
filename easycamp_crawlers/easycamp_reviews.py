@@ -48,7 +48,7 @@ def get_score(soup):
         return [None] * 5 
     for block in score_blocks:
         star_count = len(block.select("i.fa-star"))  # 計算星星數
-        scores.append(str(star_count))  # 存成字串方便後續處理
+        scores.append(star_count)  
     return scores
 
 
@@ -165,7 +165,7 @@ def get_one_place_reviews(link, headers):
         return None
 
 
-def save_to_json(data, filename):#參數名稱?
+def save_to_json(data, filename):
     """存入 JSON 檔"""
     with open(filename, "w", encoding="utf-8") as f:
        json.dump(data, f, indent=4, ensure_ascii=False)
@@ -179,7 +179,7 @@ def main():
     review_links = get_review_links(campsite_links, headers)
 
     # 使用 pathlib 定義 checkpoint 檔案路徑
-    checkpoint_file = Path("easycamp_checkpoint.json")
+    checkpoint_file = Path("easycamp_reviews.json")
     all_data = []
      # 若已有 checkpoint，先載入已經儲存的資料
     if checkpoint_file.exists():

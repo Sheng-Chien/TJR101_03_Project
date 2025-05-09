@@ -1,5 +1,6 @@
 import json
 import re
+import pandas as pd
 
 #讀取檔案
 with open("easycamp_info.json", "r", encoding="utf-8") as file:
@@ -31,7 +32,7 @@ def clean_address(data):
             item["營地地址"] = match.group(1)#營地名稱的前段部分作為無實際地址時的替代
     
 #清理海拔
-def clean_altitude(data):
+def clean_altitude(data)->int: 
     for item in data:
         altitude = item["營區介紹"].get("海拔", None)  # 使用 .get() 避免 KeyError
         if not altitude:
@@ -49,9 +50,32 @@ def clean_altitude(data):
         elif '1501m以上' in altitude:
             item["營區介紹"]["海拔"] = 1700
 
+#總評論數清洗(也可從評價檔提取)
+def clean_total_comments(data)->int:
+    for item in data:
+        comments = item["營地資訊"]["評價"]
+        match = re.search(r"\((\d+)則評價\)", comments)
+        if match:
+            item["營地資訊"]["評價"] = int(match.group(1))  
+ 
+
+#清洗獲得星數(0--->NONE) 
+def clean_total_rank(data):
+    for item in data:
+        rank = item["營地資訊"]["獲得星數"]
+        if rank == 0:
+            item["營地資訊"]["獲得星數"] = None
+
+        
+
+
+
+
 clean_name(data)
 clean_address(data)
 clean_altitude(data)
+clean_total_rank(data)
+
 
 with open("easycamp_info_cleaned.json", "w", encoding="utf-8") as f :
     json.dump(data, f, ensure_ascii=False, indent=2)
