@@ -10,7 +10,6 @@ engine = create_engine(DATABASE_URL, echo=False)
 conn = engine.connect()
 metadata = MetaData()
 
-metadata = MetaData()
 merge_table = Table('campground_merge', metadata, autoload_with=engine)
 campground_table = Table('campground', metadata, autoload_with=engine)
 county_table = Table('county', metadata, autoload_with=engine)
@@ -60,7 +59,7 @@ def query_table_with_filters(table: str, filters: dict):
             print(row)
         return None
     elif len(rows_as_dicts) == 0:
-        print("檢索資料不存在")
+        # print("檢索資料不存在")
         return dict()
     
     # 確認只有一筆資料後
@@ -130,17 +129,18 @@ def updateCampground(campground_ID, camp):
     
 def updateEquipment(campground_ID, camp):
     equipments = camp["equipment"]
-    content = "/".join(equipments)
-    filters = {
+    for equipment in equipments:
+        filters = {
         "campground_ID": campground_ID,
-        "equipment_details": content,        
-    }
-    
-    # 因為只有 2欄，只有"重複"和"沒有"這種選項
-    # 重複則更新相同資料(等同沒做事)
-    # 沒有則改為新增資料
-    if update_table_with_filters(equipment_table, filters, filters) == 0:
-        insert_table(equipment_table, filters)
+        "equipment_details": equipment,          
+        }
+        # 因為只有 2欄，只有"重複"和"沒有"這種選項
+        # 重複則更新相同資料(等同沒做事)
+        # 沒有則改為新增資料
+        if update_table_with_filters(equipment_table, filters, filters) == 0:
+            insert_table(equipment_table, filters)
+
+
 
 def updateService(campground_ID, camp):
     services = camp["special"]
@@ -164,6 +164,9 @@ def updateSite(campground_ID, camp):
     for site in sites:
         price = int(site[1])
         site_type = site[2]
+        if len(site_type) > 10:
+            # 資料表結構限制
+            continue
         filters = {
             "campground_ID": campground_ID,
             "camping_site_type_name": site_type,
@@ -199,24 +202,36 @@ def main():
         camps = json.load(file)
     
     # 依序處理每個營區
-    for camp in camps[:5]:
+    i = 0
+    for camp in camps:
+        i+=1
+        if i < 75:
+            continue
+        print(f"正在處理第 {i} 筆資料")
         camp_name = camp["name"]
         print(camp_name)
 
         # 取的該營區的 campground_ID
         campground_ID = selectTargetPK(camp_name)
-        print(campground_ID)
+        # print(campground_ID)
         if campground_ID is None:
             print("檢索錯誤或不匯入資料")
             continue
         
-        updateCampground(campground_ID, camp)
+        # 有 3 個資料格式錯誤無法讀取，先跳過
+        try:
+            _ = camp["equipment"]
+        except:
+            continue
+
+
+        # updateCampground(campground_ID, camp)
 
         updateSite(campground_ID, camp)
 
-        updateEquipment(campground_ID, camp)
+        # updateEquipment(campground_ID, camp)
 
-        updateService(campground_ID, camp)
+        # updateService(campground_ID, camp)
 
         # break
 
