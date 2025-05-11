@@ -1,7 +1,8 @@
 import json
 import os
 import pandas as pd
-#將easycamp_reviews_cleaned.json轉為dataframe
+#將easycamp_reviews_cleaned.json轉為dataframe 以匯入campground table(欄位:ratingv  total_rank    total_comments_count )
+#將easycamp_info_cleaned.json轉為dataframe以匯入campground table(欄位:altitude)
 
 # 讀取 JSON 檔案 (*檔案路徑)
 def create_rating_df():
