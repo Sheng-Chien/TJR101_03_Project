@@ -4,6 +4,22 @@ from sqlalchemy import create_engine, MetaData, Table, select, insert, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
+import os
+import sys
+# 1. 模擬從環境變數取得路徑
+os.environ["MODULE_PATH"] = ".."  # 或你可以從外部設定
+
+# 2. 取得該路徑的絕對路徑（基於目前檔案位置）
+base_path = Path(__file__).resolve().parent
+target_path = (base_path / os.environ["MODULE_PATH"]).resolve()
+
+# 3. 加到 sys.path 中，這樣才能 import
+if str(target_path) not in sys.path:
+    sys.path.insert(0, str(target_path))
+
+from eta.db.loading.loading_eta_data import query_table_with_filters, update_table_with_filters, insert_table
+
+
 # 連接到已存在的 MySQL 資料庫
 # 請根據實際資料庫設定，替換 user, password, localhost, dbname
 DATABASE_URL = "mysql+pymysql://test:PassWord_1@104.199.214.113:3307/test2_db"
@@ -25,6 +41,8 @@ county_table = Table('county', metadata, autoload_with=engine)
 def ifRepeat(row:pd.Series):
     site_ratio = row["site_ratio"]
     address_ratio = row["address_ratio"]
+    if address_ratio > 99:
+        return True
     if site_ratio > 80 and address_ratio > 70:
         return True
     if site_ratio > 80 and address_ratio > 50:
@@ -82,6 +100,9 @@ def foriegnTables(df:pd.DataFrame):
     df_county = selectTable(county_table)
 
     for idx, row in df.iterrows():
+        # 如果fk已經有值則跳過不處理
+        if row["campground_ID"]:
+            continue
 
         if idx % 20 == 0:
             print(f"正在處理第{idx}筆資料")
@@ -115,7 +136,7 @@ def foriegnTables(df:pd.DataFrame):
         }
         
         # 如果不重複，直接插入
-        # 如果相似的idx比較大，則必定尚未新增，直接插入不做比較
+        # 如果相似的idx(別人)比較大，則必定尚未新增，直接插入不做比較
         if row["repeat"] == False or row["similar_idx"] > idx:
             
             fk = insertCampground(campground_value)
@@ -129,7 +150,43 @@ def foriegnTables(df:pd.DataFrame):
                 # print(fk)
             updateMergeFK(merge_pk_value, fk)
 
+        exe = False
+        if exe:
+            # 以下是在else裡的新程式
+            # 取得similar idx 對應到的資料
+            data = query_table_with_filters(merge_table, {"idx": row["similar_idx"]})
+            # 沒資料則跳過
+            if not data:
+                print(f"{row} 索取pk錯誤")
+                continue
+            fk = data["idx"]
+            # 若有資料而且有fk 則更新
+            if fk:
+                updateMergeFK(merge_pk_value, fk)
+            # 若有資料沒fk，則表示被比較的營區為模糊不清
+            # 此時可以插入進入資料庫，並同時更新先前模糊不清的營區 fk
+            else:
+                fk = insertCampground(campground_value)
+                updateMergeFK(idx, fk)
+                updateMergeFK(row["similar_idx"], fk)
+            
 
+def diffDataframe(df_A:pd.DataFrame, df_B:pd.DataFrame):
+    """找出 df_A 與 df_B 的差集 (A - B)"""
+    # 建立一個 mask：True 表示該列「不包含」df_B 的任一列
+    def row_contains_any(row, df_b_rows):
+        row_vals = set(row.values)
+        for _, b_row in df_b_rows.iterrows():
+            if set(b_row.values).issubset(row_vals):
+                return True  # 若有任一列被包含，就回傳 True
+        return False  # 都沒包含 → False
+
+    # 用 ~ 反向篩選出「不包含 df_B 的」列
+    mask = df_A.apply(lambda row: not row_contains_any(row, df_B), axis=1)
+
+    # 最終結果
+    filtered_df = df_A[mask]
+    return filtered_df
 
 
 def main():
@@ -147,9 +204,9 @@ def main():
     df_merge.to_csv(save_path, encoding="utf-8")
 
     # 插入對照表
-    insertMergeTable(df_merge)
+    # insertMergeTable(df_merge)
     # 插入campground 並建立 merge 表的fk
-    foriegnTables(df_merge)
+    # foriegnTables(df_merge)
     
 
 if __name__ == "__main__":
