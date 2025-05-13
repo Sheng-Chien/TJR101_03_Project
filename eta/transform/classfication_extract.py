@@ -28,6 +28,7 @@ def main():
     file_path = root_dir / Path("crawler/icamping/jsons/camps.jsonl")
     save_path = Path(__file__).parent / Path("results/classfied_extract.json")
 
+    peek = []
     final_data=[]
     # 不必用AI, 字串分析部分
     with open(file_path, mode="r", encoding="utf-8") as file:
@@ -78,34 +79,38 @@ def main():
                         check = True
                         break
                 # 如果 在 黑名單 中，則跳過資料
-                
                 if check:
                     continue
 
                 # 有些營區會有多餘贅詞，多抓一次
-                if len(type) == 1:
+                if len(type) == 1 or len(type)>9:
                     site_type = site_type.replace(type, " ")
                 type = re.search(pattern, site_type).group()
+                # 真的太奇怪直接以 key 為 type
                 if len(type) == 1:
                     type = key
                 type = re.search(pattern, site_type).group()
 
-
-                type = type.replace("米", "")
+                # 刪除特別字元
+                delete_list = ["米", "限", "共"]
+                for item in delete_list:
+                    type = type.replace(item, "")
 
                 # 露營車直接以key為type
-                special_list = ["電話聯絡", "每車", "炊事"]
+                special_list = ["每車", "Ｆ炊事"]
                 content = values["price"] + values["details"] + key
                 for item in special_list:
                     if item in content:
                         type = key
                 # 雲享清峰,單面露營掛牌
                 # 眺浪營地,預訂營位請電話聯絡營主
-                # 美富安露營區,炊事
+                # 美富安露營區,F炊事
+                # 田心小營地,草地區可搭
 
 
 
                 location.append(list([key, price, type]))
+                peek.append([camp["name"], type])
             # print(location)
             data["location"] = location
             # print(data)
@@ -116,69 +121,8 @@ def main():
     with open(save_path, "w", encoding="utf-8") as file:
         json.dump(final_data, file, ensure_ascii=False, indent=2)
 
-    # 05/11 以下重新做營位整理
-    with open(file_path, mode="r", encoding="utf-8") as file:
-        data = []
-        for line in file: 
-            camp = json.loads(line)
-            # 取額營位
-            location = list()
-            for key, values in camp["services"].items():
-                # 擷取並清洗營位資訊
-                site_type = values["details"]
-                pattern = r"(?:(\d)人[\u4e00-\u9fff]+|[\u4e00-\u9fff]+)"
-                type = re.search(pattern, site_type).group()
-                # 處理特殊狀況
 
-                # 斑比跳跳特別條款
-                black_list = ["加購", "每組"]
-                white_list = ["每區", "每帳", "每車", "每人"]
-                check = False
-                for item in white_list:
-                    if item in values["price"]+key:
-                        check = True
-                        break
-                # 如果 不在 白名單 中，則跳過資料
-                if not check:
-                    continue
-        
-                check = False
-                for item in black_list:
-                    if item in values["price"]+key:
-                        check = True
-                        break
-                # 如果 在 黑名單 中，則跳過資料
-                
-                if check:
-                    continue
-
-                # 有些營區會有多餘贅詞，多抓一次
-                if len(type) == 1:
-                    site_type = site_type.replace(type, " ")
-                type = re.search(pattern, site_type).group()
-                if len(type) == 1:
-                    type = key
-                type = re.search(pattern, site_type).group()
-
-
-                type = type.replace("米", "")
-
-                # 露營車直接以key為type
-                special_list = ["電話聯絡", "每車", "炊事"]
-                content = values["price"] + values["details"] + key
-                for item in special_list:
-                    if item in content:
-                        type = key
-                # 雲享清峰,單面露營掛牌
-                # 眺浪營地,預訂營位請電話聯絡營主
-                # 美富安露營區,炊事
-
-                
-                data.append(list([camp["name"], type]))
-
-    
-    # print(data)
-    df = pd.DataFrame(data = data, columns=["camp", "type"])
+    df = pd.DataFrame(data = peek, columns=["camp", "type"])
     df.to_csv(Path(__file__).parent/"results/text_type.csv", encoding="utf-8")
 
 if __name__ == "__main__":
