@@ -110,7 +110,7 @@ def campsiteNF(text:str):
 
 def addressNF(text:str):
     if pd.isnull(text):
-        return ""
+        return " "
     # 將門牌正規為阿拉伯數字
     text = re.sub(r'(\d+)-(\d+)', r'\1之\2', text)
     # 繁簡統一
@@ -132,6 +132,11 @@ def addressRatio(addr1:str, addr2:str):
     score =  fuzz.partial_ratio(addr1, addr2)
 
     return score
+
+
+def addressFormat(df):
+    pass
+
 
 def main():
     # 獲取所有

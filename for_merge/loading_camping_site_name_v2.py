@@ -22,7 +22,7 @@ from eta.db.loading.loading_eta_data import query_table_with_filters, update_tab
 
 # 連接到已存在的 MySQL 資料庫
 # 請根據實際資料庫設定，替換 user, password, localhost, dbname
-DATABASE_URL = "mysql+pymysql://test:PassWord_1@104.199.214.113:3307/test2_db"
+DATABASE_URL = "mysql+pymysql://test:PassWord_1@104.199.214.113:3307/eta"
 
 # 建立 SQLAlchemy 引擎
 engine = create_engine(DATABASE_URL, echo=False)
@@ -41,8 +41,10 @@ county_table = Table('county', metadata, autoload_with=engine)
 def ifRepeat(row:pd.Series):
     site_ratio = row["site_ratio"]
     address_ratio = row["address_ratio"]
+    # 如果地址到 "XX號" 都相同的話，判定為相同
     if address_ratio > 99:
-        return True
+        if "號" in row["Address"] and "號" in row["similar_address"]:
+            return True
     if site_ratio > 80 and address_ratio > 70:
         return True
     if site_ratio > 80 and address_ratio > 50:
@@ -55,7 +57,7 @@ def insertMergeTable(df:pd.DataFrame):
     for idx, row in df.iterrows():
         if idx % 20 == 0:
             print(f"正在處理第{idx}筆資料")
-        
+        # print(new_values)
         new_values = row.to_dict()
         # print(new_value)
         with engine.connect() as conn:
@@ -90,7 +92,7 @@ def insertCampground(values):
         conn.commit()
         # 取得自動增量的 id
         inserted_id = result.inserted_primary_key[0]
-        # print(f"插入後的自動增量 ID: {inserted_id}")
+        print(f"插入後的自動增量 ID: {inserted_id}")
         return inserted_id
 
 
@@ -99,9 +101,12 @@ def foriegnTables(df:pd.DataFrame):
     df = selectTable(merge_table)
     df_county = selectTable(county_table)
 
-    for idx, row in df.iterrows():
-        # 如果fk已經有值則跳過不處理
-        if row["campground_ID"]:
+    for _, row in df.iterrows():
+        idx = row["idx"]
+        print(f"{idx} {row}")
+        # 如果 fk 不是空值(已經有值) 則跳過不處理
+        if not pd.isna(row["campground_ID"]):
+            print(f"{idx} fk:{row["campground_ID"]} 有值不處理")
             continue
 
         if idx % 20 == 0:
@@ -109,19 +114,24 @@ def foriegnTables(df:pd.DataFrame):
 
         # 模糊不清的跳過, fk 為 null
         if pd.isna(row["repeat"]):
-            # print("NAN")
+            print(f"{idx} 模糊不清，跳過")
             continue
         # 提取縣市
-        county = row["address"][:3]
+        addr = row["address"]
+        cleaned_text = ''.join(c for c in addr if not c.isdigit())
+        county = cleaned_text[:3]
         # 查詢縣市代號
+        # print("Check Point")
         try:
             matching_row = df_county.loc[df_county['county_name'] == county].iloc[0]  # .iloc[0] 獲取第一行  
             # print(county, matching_row)
             county_id = matching_row["county_ID"]
         except:
             # 不在縣市清單中的同樣當作模糊不清, fk 為 null
+            # 即使被標明為相同/不同營區，沒有對應county_ID會報錯
+            print(f"{idx} 地址不明確")
             county_id = -1
-            continue
+            # continue
 
         # print(county, county_id)
         merge_pk_value = {
@@ -134,24 +144,26 @@ def foriegnTables(df:pd.DataFrame):
             "address": row["address"],
             "county_ID": county_id,
         }
-        
         # 如果不重複，直接插入
         # 如果相似的idx(別人)比較大，則必定尚未新增，直接插入不做比較
-        if row["repeat"] == False or row["similar_idx"] > idx:
-            
+        # if row["repeat"] == False or row["similar_idx"] > idx:
+        if not row["repeat"] or row["similar_idx"] > idx:
+            print(f"{idx} 新增並更新PK")
+            if campground_value["county_ID"] < 0:
+                continue
             fk = insertCampground(campground_value)
             updateMergeFK(merge_pk_value, fk)
 
         else:
-            # 先更新merge 表的 fk
-            stmt = select(merge_table.c.campground_ID).where(merge_table.c.idx == row["similar_idx"])
-            with engine.connect() as conn:
-                fk = conn.execute(stmt).fetchall()[0][0]
-                # print(fk)
-            updateMergeFK(merge_pk_value, fk)
+        #     # 先更新merge 表的 fk
+        #     stmt = select(merge_table.c.campground_ID).where(merge_table.c.idx == row["similar_idx"])
+        #     with engine.connect() as conn:
+        #         fk = conn.execute(stmt).fetchall()[0][0]
+        #         # print(fk)
+        #     updateMergeFK(merge_pk_value, fk)
 
-        exe = False
-        if exe:
+        # exe = False
+        
             # 以下是在else裡的新程式
             # 取得similar idx 對應到的資料
             data = query_table_with_filters(merge_table, {"idx": row["similar_idx"]})
@@ -159,13 +171,18 @@ def foriegnTables(df:pd.DataFrame):
             if not data:
                 print(f"{row} 索取pk錯誤")
                 continue
-            fk = data["idx"]
+            fk = data["campground_ID"]
             # 若有資料而且有fk 則更新
             if fk:
+                print(f"{idx} 相同營區不插入，更新fk {fk} campid:{data["idx"]}")
                 updateMergeFK(merge_pk_value, fk)
+                # updateMergeFK({"idx": idx}, fk)
             # 若有資料沒fk，則表示被比較的營區為模糊不清
             # 此時可以插入進入資料庫，並同時更新先前模糊不清的營區 fk
             else:
+                print(f"{idx} 被比較的營區為模糊")
+                if campground_value["county_ID"] < 0:
+                    continue
                 fk = insertCampground(campground_value)
                 updateMergeFK(idx, fk)
                 updateMergeFK(row["similar_idx"], fk)
@@ -192,6 +209,8 @@ def diffDataframe(df_A:pd.DataFrame, df_B:pd.DataFrame):
 def main():
     file_path = Path(__file__).parent/"results/results.csv"
     df = pd.read_csv(file_path, encoding="utf-8", engine="python")
+
+    # df = df[:800]
     # 是否重複
     result_series = df.apply(lambda row: ifRepeat(row), axis=1)
     df["repeat"] = result_series
@@ -200,13 +219,20 @@ def main():
     df_merge.reset_index(names="idx", inplace=True)
     # 把欄位名稱改成和 mysql一致
     df_merge.columns = ["idx", "name", "camping_site_name", "address", "similar_idx", "repeat"]
+    # 空值處理
+    df_merge["address"] = df_merge["address"].fillna(" ")
+    
     save_path = Path(__file__).parent/"results/temp.csv"
     df_merge.to_csv(save_path, encoding="utf-8")
 
+    # df_merge = df_merge[:10]
     # 插入對照表
-    # insertMergeTable(df_merge)
+    print("更新對照表")
+    insertMergeTable(df_merge)
     # 插入campground 並建立 merge 表的fk
-    # foriegnTables(df_merge)
+    print("="*20)
+    print("更新營區資料表")
+    foriegnTables(df_merge)
     
 
 if __name__ == "__main__":
