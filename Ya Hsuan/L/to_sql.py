@@ -227,30 +227,107 @@ def updateSite(campground_ID, camp):
             data["price"] = price
             update_table_with_filters(camping_site_table, filters, data)
 
-#def updateArticles(campground_ID, camps_reviews):
+def updateCampers(campground_ID, camp_name, camps_reviews):
+    camp_review = next((r for r in camps_reviews if r["營地名稱"] == camp_name), None)
+    if not camp_review:
+        print(f"未找到 {camp_name} 的評論資料，略過評論更新")
+        return
+    reviews = camp_review.get("顧客評論", [])
+    if not reviews:
+        print(f"{camp_name} 沒有顧客評論，略過 campers 寫入")
+        return
+    
+    camper_names = set()
+    for r in reviews:
+        camper_name = r.get("姓名")
+        if not camper_name or camper_name in camper_names:
+            continue
+        camper_names.add(camper_name)
 
-#def updateCampers(campground_ID, camps_reviews):
+        filters = {
+            "camper_name": camper_name,
+            "platform_ID": 4,
+        }
+        
+        if update_table_with_filters(campers_table, filters, filters) == 0:
+            insert_table(campers_table, filters) 
+
+def updateArticles(campground_ID, camp_name, camps_reviews):
+    camp_review = next((r for r in camps_reviews if r["營地名稱"] == camp_name), None)
+    if not camp_review:
+        print(f"未找到 {camp_name} 的評論資料，略過評論更新")
+        return
+    reviews = camp_review.get("顧客評論", [])
+    if not reviews:
+        print(f"{camp_name} 沒有顧客評論，略過 Articles 寫入")
+        return
+    
+    for review in reviews:
+        # 提取評論資料
+        publish_date = review.get("評論日期")
+        article_rank = review.get("評分")
+        content = review.get("content")
+        camper_name = review.get("姓名")
+        
+        # 檢查是否有必要的資料
+        if not publish_date or not article_rank or not content or not camper_name:
+            print(f"缺少必要資料：{review}，跳過這條評論")
+            continue
+        
+        # 根據姓名和 platform_ID 找到唯一的 camper_ID
+        camper_filters = {"camper_name": camper_name, "platform_ID": 4}
+        camper_data = query_table_with_filters(campers_table, camper_filters)
+        if not camper_data:
+            print(f"找不到 camper 資料：{camper_name}，跳過這條評論")
+            continue
+        camper_ID = camper_data.get("camper_ID")
+        
+        if not camper_ID:
+            print(f"找不到 camper_ID，跳過這條評論：{review}")
+            continue
+
+        # 準備寫入資料
+        article_data = {
+            "platform_ID": 4,
+            "camper_ID": camper_ID,
+            "campground_ID": campground_ID,
+            "publish_date": publish_date,
+            "article_rank": article_rank,
+            "content": content,
+            "article_type": "評論",  # 固定值
+        }
+        
+        # 檢查資料是否已存在
+        article_filters = {
+            "platform_ID": 4,
+            "camper_ID": camper_ID,
+            "campground_ID": campground_ID,
+            "publish_date": publish_date,  # 假設評論日期唯一，避免重複寫入
+        }
+        
+        if update_table_with_filters(articles_table, article_filters, article_data) == 0:
+            insert_table(articles_table, article_data)
+        else:
+            print(f"已存在相同的評論資料，跳過寫入：{publish_date}")
 
 
 def main():
     # info檔案
-    info_file_path = Path(__file__).parent.parent / "transform" /"easycamp_info_classify.json"
-    # 定位到 transform 資料夾底下的 easycamp_reviews_cleaned.json
+    info_file_path = Path(__file__).parent.parent / "T" /"easycamp_info_classify.json"
+    # 定位到 T資料夾底下的 json檔
     with open(info_file_path, "r", encoding="utf-8") as file:
         camps_info = json.load(file)
     # review檔案
-    reviews_file_path = Path(__file__).parent.parent / "transform"/'easycamp_reviews_cleaned.json'
+    reviews_file_path = Path(__file__).parent.parent / "T"/"reviews_ready_for_db.json"
     with open(reviews_file_path, "r", encoding="utf-8") as f:
         camps_reviews = json.load(f)
 
 # 依序處理每個營區
     for camp in camps_info:
         camp_name = camp["營地名稱"]
-        print(camp_name)
-
         # 取的營區的 campground_ID
         campground_ID = selectTargetPK(camp_name)
-        print(campground_ID)
+        print(camp_name,campground_ID)
         if campground_ID is None:
             print("檢索錯誤或不匯入資料")
             continue
@@ -262,6 +339,10 @@ def main():
         updateEquipment(campground_ID, camp)
 
         updateService(campground_ID, camp)
+
+        updateCampers(campground_ID, camp_name, camps_reviews)
+        
+        updateArticles(campground_ID, camp_name, camps_reviews)
 
 if __name__ == "__main__":
     main()
