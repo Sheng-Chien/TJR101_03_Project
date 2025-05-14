@@ -3,17 +3,14 @@ from bs4 import BeautifulSoup
 import re
 import json
 import time
-
+from pathlib import Path
+from campsite_links import get_campsite_links,get_city_links
 headers = {
         "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"}
 
 urlstart = "https://www.easycamp.com.tw"
 
-from campsite_links import get_campsite_links,get_city_links
-
-
-    
-# 3. 擷取個別露營場的詳細資訊 
+   
 def get_camp_info(soup):
     """營地基本資訊"""
     h1_tag =  soup.select_one("h1")
@@ -94,7 +91,9 @@ def get_one_place_info(url):
    
 def save_to_json(data, filename):
     """存入 JSON 檔"""
-    with open(filename, "w", encoding="utf-8") as f:
+    current_dir = Path(__file__).parent
+    file_path = current_dir / filename
+    with open(file_path, "w", encoding="utf-8") as f:
        json.dump(data, f, indent=4, ensure_ascii=False)
 
 
@@ -103,7 +102,7 @@ def main():
     headers = {
         "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"}
     camps_data = []
-    city_links = get_city_links(url, headers)
+    city_links = get_city_links(url, headers)[0:-3]
     campsite_links = get_campsite_links(city_links, headers)
     for link in campsite_links:
         data = get_one_place_info(link)

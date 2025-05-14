@@ -1,4 +1,6 @@
 import json
+from pathlib import Path
+
 #CLEANED再清洗
 
 
@@ -44,14 +46,18 @@ def transform_data(data):
     }
     return result
 
+def main():
+    current_dir = Path(__file__).parent
+    input_path = current_dir / "easycamp_info_cleaned.json"
+    with open(input_path, "r", encoding="utf-8") as file:
+        cleaned_data = json.load(file)
 
-#讀取檔案
-with open("easycamp_info_cleaned.json", "r", encoding="utf-8") as file:
-    cleaned_data = json.load(file)
+    transformed_all = [transform_data(camp) for camp in cleaned_data[:3]]
+    output_path = current_dir / "info_ready_for_db.json"
+    with open(output_path, "w", encoding="utf-8") as f :
+        json.dump(transformed_all, f, ensure_ascii=False, indent=2)
 
-transformed_all = [transform_data(camp) for camp in cleaned_data]
+    print("✅ 轉換完成")
 
-with open("easycamp_info_classify.json", "w", encoding="utf-8") as f :
-    json.dump(transformed_all, f, ensure_ascii=False, indent=2)
-
-print("✅ 轉換完成")
+if __name__ == "__main__":
+    main()
