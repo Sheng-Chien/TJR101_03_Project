@@ -43,22 +43,20 @@ result_df = df1.merge(df2[["campground_ID", "camping_site_name", "address", "tot
 
 tag_file = file_path / "MART01_ai_add_campground_tag.csv"
 df3 = pd.read_csv(tag_file, encoding="utf-8-sig")
+# 改欄位名字
+df3.rename(columns={"露營場ID": "campground_ID"}, inplace=True)
+
 
 # 合併同一露營場的 TAG（以 campground_ID 為主）
 df3_grouped = (
     df3.groupby("campground_ID")
     .agg({
-        "region": "first",
-        "county_name": "first",
-        "county_ID": "first",
-        "camping_site_name": "first",
-        "address": "first",
-        "Tag": lambda x: "｜".join(sorted(set(tag for tags in x for tag in str(tags).split("｜"))))  # 合併並去重
+        "Tag": lambda x: "｜".join(sorted(set(tag for tags in x for tag in str(tags).split("｜"))))
     })
     .reset_index()
-)
+    )
 
-result_df = result_df.merge(df3_grouped[["campground_ID", "region", "county_name", "county_ID", "Tag"]], on="campground_ID", how="left")
+result_df = result_df.merge(df3_grouped, on="campground_ID", how="left")
 # # 保留有Tag的露營場
 # result_df = result_df[result_df["Tag"].notna()]
 

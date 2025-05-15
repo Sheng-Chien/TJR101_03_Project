@@ -45,7 +45,7 @@ tag_string = "｜".join(tag_list.tolist())
 
 # 載入jieba已經切好的關鍵字檔案-------------------------
 
-keywords_file = save_path / "review_keyword_groupby_campground.csv"
+keywords_file = save_path / "MART00_cut_keyword_groupby_campground.csv"
 df_keyword = pd.read_csv(keywords_file, encoding="utf-8-sig")
 
 # # 隨機挑選數個露營場先做測試---------------

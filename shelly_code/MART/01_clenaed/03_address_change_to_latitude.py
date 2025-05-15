@@ -39,22 +39,20 @@ for i, row in df["清洗後地址"].items():
         if location:
             latitudes.append(location.latitude)
             longitudes.append(location.longitude)
-            print(f"{row}轉換完成")
         else:
             latitudes.append(None)
             longitudes.append(None)
-            #print(f"{row} 找不到地址")
+            print(f"{row} 找不到地址")
     except Exception as e:
         latitudes.append(None)
         longitudes.append(None)
-        print(f"{row} 查詢錯誤：{e}")
+        print(f"{row} 查詢錯誤")
 
 # 存入欄位
 df["lat"] = latitudes
 df["lng"] = longitudes
 
-input_file = Path(r"C:\TJR101_03_Project\.venv\MART\01\address_change_to_latitude.csv")
-df = pd.read_csv(input_file, encoding="utf-8-sig")
+# 上面無法轉換的，這邊做轉換------------------
 
 # 建立鄉鎮名稱關鍵字對應經緯度的字典
 custom_latlng = {
@@ -69,9 +67,18 @@ custom_latlng = {
     "富里鄉": (23.194803, 121.296640),
     "大湖鄉": (24.418218, 120.865382),
     "鹿野鄉": (22.912472, 121.136972),
+    "六龜區": (22.996955, 120.648315),
+    "民雄鄉": (23.551456, 120.428577),
+    "國姓鄉": (24.040048, 120.857508),
+    "泰武鄉": (22.520000, 120.430000),
+    "中壢區": (24.953000, 121.225000),
+    "卓蘭鎮": (24.312000, 120.827000),
+    "尖石鄉": (24.548314, 121.343789),
+    "番路鄉": (23.362000, 120.581000),
+    "南庄鄉": (24.628147, 121.016689),
     }
 
-# 遍歷每筆地址
+
 for i, addr in df["清洗後地址"].items():
     found = False
     for keyword, (lat, lng) in custom_latlng.items():
