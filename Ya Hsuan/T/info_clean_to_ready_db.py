@@ -28,21 +28,92 @@ def transform_data(data):
         items = [s.strip() for s in text.replace("\n", "").split("、") if s.strip()]
         service_items.extend(items)
 
+    # 🔽 加入標準化處理
+    replacements = {
+        "寵物同行": "寵物友善",
+        "寵物友善免裝備露營": "寵物友善",
+        "生態導覽": "導覽解說",
+        "部落導覽": "導覽解說",
+        "導覽解說": "導覽解說",
+        "雲海": "雲海",
+        "有雲海": "雲海",
+        "有雨棚": "雨棚",
+        "有夜景": "夜景",
+        "登山步道": "步道",
+        "步道": "步道",
+        "一帳包區": "少帳包區",
+        "小包區": "少帳包區",
+        "少帳包場": "少帳包區",
+        "機車露營": "可車露",
+        "可車露": "可車露",
+        "營區賞螢": "賞螢",
+        "周邊賞螢": "賞螢"
+    }
+
+    to_remove = {"需注意清潔", "需綁鍊或放置籠內", "需先取得營主同意", "大型狗禁止"}
+
+    # 標準化 service_items
+    standardized_service = []
+    for item in service_items:
+        if item in to_remove:
+            continue
+        # 替換成標準化名稱（若在 mapping 中）
+        standardized_value = replacements.get(item, item)
+        if standardized_value not in standardized_service:
+            standardized_service.append(standardized_value)
+    
     # 將「衛浴配置」、「無線通訊」、「附屬設施」合併為 equipment list
     equipment_fields = ["衛浴配置", "無線通訊", "附屬設施"]
-    equipment_items = []
+    raw_equipment_items = []
     for field in equipment_fields:
         text = camp_intro.get(field, "")
         items = [s.strip() for s in text.replace("\n", "").split("、") if s.strip()]
-        equipment_items.extend(items)
+        raw_equipment_items.extend(items)
+
+    # 標準化與過濾條件
+    equipment_standardized = []
+    added_set = set()  # 用來避免重複加入
+
+    signal_keywords = [
+        "3G/4G訊號", "中華電信有訊號", "遠傳有訊號", "台哥大有訊號",
+        "台灣之星有訊號", "亞太有訊號", "其他家訊號不穩"
+    ]
+    fridge_keywords = ["有冰箱", "冷藏", "冷凍"]
+    play_keywords = ["溜滑梯", "鞦韆"]
+    remove_keywords = ["季節賞花", "開心農場", "攀岩", "攀樹", "山訓"]
+
+    for item in raw_equipment_items:
+        if any(word in item for word in remove_keywords):
+            continue
+        elif item in fridge_keywords:
+            if "冰箱" not in added_set:
+                equipment_standardized.append("冰箱")
+                added_set.add("冰箱")
+        elif item in signal_keywords:
+            if "無線通訊有訊號" not in added_set:
+                equipment_standardized.append("無線通訊有訊號")
+                added_set.add("無線通訊有訊號")
+        elif item == "男女廁所":
+            if "男女浴廁分開" not in added_set:
+                equipment_standardized.append("男女浴廁分開")
+                added_set.add("男女浴廁分開")
+        elif item in play_keywords:
+            if "兒童遊樂設施" not in added_set:
+                equipment_standardized.append("兒童遊樂設施")
+                added_set.add("兒童遊樂設施")
+        else:
+            if item not in added_set:
+                equipment_standardized.append(item)
+                added_set.add(item)
+
 
     # 回傳轉換後結果
     result = {
         "營地名稱": camp_name,
         "營地價格": price_table,
         "海拔": altitude,
-        "service": service_items,
-        "equipment": equipment_items
+        "service":  standardized_service,
+        "equipment": equipment_standardized
     }
     return result
 
