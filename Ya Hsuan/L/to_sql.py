@@ -5,7 +5,7 @@ from sqlalchemy import create_engine, MetaData, Table, select, insert, update
 from sqlalchemy.sql import and_
 
 
-DATABASE_URL = "mysql+pymysql://test:PassWord_1@104.199.214.113:3307/test2_db"
+DATABASE_URL = "mysql+pymysql://test:PassWord_1@104.199.214.113:3307/eta"
 engine = create_engine(DATABASE_URL, echo=False)
 conn = engine.connect()
 metadata = MetaData()
@@ -126,7 +126,7 @@ def updateCampground(campground_ID, camp, camps_reviews):
                 data["total_rank"] = round((old_rank + new_rank) / 2, 2)
             else:
                 data["total_rank"] = new_rank
-        data["total_comments_count"] = review_data.get("評論總數", data.get("total_comments_count"))
+        #data["total_comments_count"] = review_data.get("評論總數", data.get("total_comments_count"))
         data["traffic_rating"] = review_data.get("交通便利度", data.get("traffic_rating"))
         data["bathroom_rating"] = review_data.get("衛浴整潔度", data.get("bathroom_rating"))
         data["view_rating"] = review_data.get("景觀滿意度", data.get("view_rating"))
@@ -227,7 +227,7 @@ def updateSite(campground_ID, camp):
             data["price"] = price
             update_table_with_filters(camping_site_table, filters, data)
 
-def updateCampers(campground_ID, camp_name, camps_reviews):
+def updateCampers(camp_name, camps_reviews):
     camp_review = next((r for r in camps_reviews if r["營地名稱"] == camp_name), None)
     if not camp_review:
         print(f"未找到 {camp_name} 的評論資料，略過評論更新")
@@ -313,7 +313,7 @@ def updateArticles(campground_ID, camp_name, camps_reviews):
 
 def main():
     # info檔案
-    info_file_path = Path(__file__).parent.parent / "T" /"easycamp_info_classify.json"
+    info_file_path = Path(__file__).parent.parent / "T" /"info_ready_for_db.json"
     # 定位到 T資料夾底下的 json檔
     with open(info_file_path, "r", encoding="utf-8") as file:
         camps_info = json.load(file)
@@ -332,17 +332,17 @@ def main():
             print("檢索錯誤或不匯入資料")
             continue
         
-        updateCampground(campground_ID, camp, camps_reviews)
+        # updateCampground(campground_ID, camp, camps_reviews)
 
-        updateSite(campground_ID, camp)
+        # updateSite(campground_ID, camp)
 
         updateEquipment(campground_ID, camp)
 
         updateService(campground_ID, camp)
 
-        updateCampers(campground_ID, camp_name, camps_reviews)
+        # updateCampers(camp_name, camps_reviews)
         
-        updateArticles(campground_ID, camp_name, camps_reviews)
+        # updateArticles(campground_ID, camp_name, camps_reviews)
 
 if __name__ == "__main__":
     main()
