@@ -1,0 +1,32 @@
+loading_camping_site_name.py
+上傳資料到 MYSQL
+
+營區部分
+1. 檢查是否已經存在於對照表中
+    yes: 由 fk 取得 camping_site_id
+    no: 比對相似分數
+        分數低: 表示完全不同，是沒新增過的營區，插入camping_ground。
+                取得 camping_site_id 作為fk
+        分數高: 表示重複，由對照表取得fk 
+        分數不上不下: 不知道是不是重複的，fk 為null
+
+        插入(新增)到對照表中，並由 fk 取得 camping_site_id
+
+2. 如果 camping_site_id 不為 null
+    新增或插入資料
+==============================================================
+1. 檢查是否已經存在於對照表中:
+    直接插入，fk = null，因為除了fk 都是pk ，會拋錯(IntegrityError)
+    拋錯: 表示對照表已存在，讀取該筆資料的fk 作為更新資料的依據
+    成功插入: 表示不存在於對照表，比較相似度分數
+        分數低: 表示完全不同，是不在資料庫中的營地。
+                先插入 camping_ground，再取得camping_site_id 作為pk
+                update fk 對照表
+        分數高: 表示是重複的營區，找到高分對應的營區，複製fk 作為fk
+                update fk 到對照表
+        分數不上不下: 不動作
+
+2. 如果 fk 不為 null
+    新增或插入資料    
+
+使用sqlalchemy core 語法
