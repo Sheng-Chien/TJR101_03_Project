@@ -5,7 +5,7 @@ from sqlalchemy import create_engine, MetaData, Table, select, insert, update
 from sqlalchemy.sql import and_
 
 
-DATABASE_URL = "mysql+pymysql://test:PassWord_1@104.199.214.113:3307/test2_db"
+DATABASE_URL = "mysql+pymysql://test:PassWord_1@104.199.214.113:3307/eta"
 engine = create_engine(DATABASE_URL, echo=False)
 conn = engine.connect()
 metadata = MetaData()
@@ -332,17 +332,17 @@ def main():
             print("檢索錯誤或不匯入資料")
             continue
         
-        updateCampground(campground_ID, camp, camps_reviews)
+        # updateCampground(campground_ID, camp, camps_reviews)
 
-        updateSite(campground_ID, camp)
+        # updateSite(campground_ID, camp)
 
         updateEquipment(campground_ID, camp)
 
         updateService(campground_ID, camp)
 
-        updateCampers(camp_name, camps_reviews)
+        # updateCampers(camp_name, camps_reviews)
         
-        updateArticles(campground_ID, camp_name, camps_reviews)
+        # updateArticles(campground_ID, camp_name, camps_reviews)
 
 if __name__ == "__main__":
     main()

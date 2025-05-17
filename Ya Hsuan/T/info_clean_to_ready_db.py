@@ -50,7 +50,7 @@ def transform_data(data):
         "周邊賞螢": "賞螢"
     }
 
-    to_remove = {"需注意清潔", "需綁鍊或放置籠內", "需先取得營主同意", "大型狗禁止"}
+    to_remove = {"需注意清潔", "需綁鍊或放置籠內", "需先取得營主同意", "大型狗禁止", "入園需另購門票", "需收寵物清潔費"}
 
     # 標準化 service_items
     standardized_service = []
@@ -80,7 +80,7 @@ def transform_data(data):
     ]
     fridge_keywords = ["有冰箱", "冷藏", "冷凍"]
     play_keywords = ["溜滑梯", "鞦韆"]
-    remove_keywords = ["季節賞花", "開心農場", "攀岩", "攀樹", "山訓"]
+    remove_keywords = ["季節賞花", "開心農場", "攀岩", "攀樹", "山訓","塗鴨板", "水瓢"]
 
     for item in raw_equipment_items:
         if any(word in item for word in remove_keywords):
@@ -123,7 +123,7 @@ def main():
     with open(input_path, "r", encoding="utf-8") as file:
         cleaned_data = json.load(file)
 
-    transformed_all = [transform_data(camp) for camp in cleaned_data[:3]]
+    transformed_all = [transform_data(camp) for camp in cleaned_data]
     output_path = current_dir / "info_ready_for_db.json"
     with open(output_path, "w", encoding="utf-8") as f :
         json.dump(transformed_all, f, ensure_ascii=False, indent=2)
