@@ -31,13 +31,11 @@ def main():
         camping_name = i.select_one("h2.css-1czfelb")
         if camping_name is not None:
             camping_name = camping_name.text.split("：")[-1].strip()
+        camping_date=i.select_one("time.css-1gryrf1.e1f1sunr4")
         camping_content = i.select_one("p.css-12e28k9.emevuu60").text.strip()
-        camping_site = i.select_one("div.css-wutqs3.e16kmapv7 > p:nth-child(2)")
-        if camping_site is not None:
-            camping_site = camping_site.text.strip()
 
         # 將抓取到的資料添加到 content 列表
-        content.append([camping_name, camping_content, camping_site])
+        content.append([camping_name, camping_date, camping_content])
         print(content)
         print("-" * 100)
 
