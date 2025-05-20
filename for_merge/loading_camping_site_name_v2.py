@@ -22,7 +22,7 @@ from eta.db.loading.loading_eta_data import query_table_with_filters, update_tab
 
 # 連接到已存在的 MySQL 資料庫
 # 請根據實際資料庫設定，替換 user, password, localhost, dbname
-DATABASE_URL = "mysql+pymysql://test:PassWord_1@104.199.214.113:3307/test2_db"
+DATABASE_URL = "mysql+pymysql://tjr101_g3:PassWord_G3@104.199.214.113:3306/Camping"
 
 # 建立 SQLAlchemy 引擎
 engine = create_engine(DATABASE_URL, echo=False)

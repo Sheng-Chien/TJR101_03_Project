@@ -4,8 +4,7 @@ import json
 from sqlalchemy import create_engine, MetaData, Table, select, insert, update
 from sqlalchemy.sql import and_
 
-
-DATABASE_URL = "mysql+pymysql://test:PassWord_1@104.199.214.113:3307/eta"
+DATABASE_URL = "mysql+pymysql://tjr101_g3:PassWord_G3@104.199.214.113:3306/Camping"
 engine = create_engine(DATABASE_URL, echo=False)
 conn = engine.connect()
 metadata = MetaData()
@@ -13,8 +12,8 @@ metadata = MetaData()
 merge_table = Table('campground_merge', metadata, autoload_with=engine)
 campground_table = Table('campground', metadata, autoload_with=engine)
 county_table = Table('county', metadata, autoload_with=engine)
-equipment_table = Table('equipment', metadata, autoload_with=engine)
-service_table = Table('service', metadata, autoload_with=engine)
+# equipment_table = Table('equipment', metadata, autoload_with=engine)
+# service_table = Table('service', metadata, autoload_with=engine)
 camping_site_table = Table('camping_site', metadata, autoload_with=engine)
 
 
