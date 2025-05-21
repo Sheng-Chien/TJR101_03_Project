@@ -4,6 +4,15 @@ from pathlib import Path
 import json
 import re
 
+def replaceItem(input:list, target:list, replacement:str):
+    for idx in range(len(input)):
+        for el in target:
+            if el in input[idx]:
+                input[idx] = replacement
+    
+    return input
+
+
 def main():
     # 讀取ai分析結果
 
@@ -25,6 +34,7 @@ def main():
         # 只擷取json檔案部分
         start = camp_related.find("{")
         end = camp_related.rfind("}")
+        print(file_name)
         if start != -1 and end != -1 and start < end:
             camp_related = camp_related[start : end+1]
             camp_related = json.loads(camp_related)
@@ -33,6 +43,22 @@ def main():
             print(f"{file_name} 檔案格式錯誤！")
             continue
 
+        # 特殊處理
+        # 冰箱條款
+        equipmint_list = ["冰", "凍"]
+        camp_related["equipment"] = replaceItem(camp_related["equipment"], equipmint_list, "冰箱")
+        # 美味條款
+        service_list = ["好味"]
+        camp_related["special"] = replaceItem(camp_related["special"], service_list, "在地美味")
+        # # 寵物條款
+        # if "寵物友善" in camp_related["equipment"]:
+        #     camp_related["equipment"].remove("寵物友善")
+        #     camp_related["special"].append("寵物友善")
+        
+
+
+        
+        # 加入營地名稱以供辨識
         ai_data[file_name.split(".")[0]] = camp_related
     
     # 存檔(可有可無，方便查看以及回憶資料結構)
