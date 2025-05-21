@@ -8,7 +8,7 @@ def getAllCSVtoDF()->pd.DataFrame:
     """取得同資料夾下的所有.cxv檔，合併為一張總表，並以DataFrame回傳"""
     
     # 要讀取的檔名集合
-    file_names = ["eta*.csv", "shelly*.csv", "YH*.csv", "Willy*.csv"]
+    file_names = ["eta*.csv", "shelly*.csv", "YH*.csv", "Willy*.csv", "Peter*.csv"]
 
     df_list = []
     # 依序取得所有檔案內容
@@ -172,6 +172,11 @@ def main():
     # 相似營區地址分數
     df_base["address_ratio"] = df_base["address_NF"].combine(df_base["similar_address"], lambda x, y: addressRatio(x,y)).round(2)
     
+    # mysql特別條款
+    # 因為資料表結構限制，特別修改
+    df_base["Campsite"] = df_base["Campsite"].astype(str).str.slice(0,40)
+    df_base["Address"] = df_base["Address"].astype(str).str.slice(0,50)
+
     save_path = Path(__file__).parent/"results/results.csv"
     saveFile(df_base, save_path)
 
