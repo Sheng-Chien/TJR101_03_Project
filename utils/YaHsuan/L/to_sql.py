@@ -222,7 +222,8 @@ def updateSite(campground_ID, camp):
                 conn.commit()
         else:
             # 有資料，作比對後更新
-            if data["price"] > price:# 資料價格較高則不更新
+            if data["price"] > price:# mysql內資料價格較高則不更新
+                print("現有價格資料較高，不更新")
                 continue
             data["price"] = price
             update_table_with_filters(camping_site_table, filters, data)
