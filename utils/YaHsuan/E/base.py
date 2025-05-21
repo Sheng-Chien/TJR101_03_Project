@@ -20,12 +20,15 @@ def get_city_links(url, headers):
             for a in city_div.find_all("a"):
                 href = a.get("href") 
                 if href:
-                    city_links.append(base_url + href )
-    
-    #print(f"抓取{len(city_links)}個縣市的網址")  
-    #print(f"city_links: {city_links}")  
+                    city_links.append(base_url + href )  
     return city_links
 
-if __name__ == "__main__":
+def main():
     url = "https://www.easycamp.com.tw/store/store_list"
-    get_city_links(url, headers)
+    links = get_city_links(url, headers)
+    for link in links:
+        print(link)
+if __name__ == "__main__":
+    main()
+
+

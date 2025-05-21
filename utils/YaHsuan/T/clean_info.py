@@ -1,10 +1,9 @@
 import json
 import re
 import pandas as pd
+from pathlib import Path
 
-#讀取檔案
-with open("easycamp_info.json", "r", encoding="utf-8") as file:
-    data = json.load(file)
+
 
 #清理營地名稱（去除地名和括號內的內容）
 def clean_name(data):
@@ -49,14 +48,6 @@ def clean_altitude(data)->int:
             item["營區介紹"]["海拔"] = 1250
         elif '1501m以上' in altitude:
             item["營區介紹"]["海拔"] = 1700
-
-#總評論數清洗(也可從評價檔提取)
-def clean_total_comments(data)->int:
-    for item in data:
-        comments = item["營地資訊"]["評價"]
-        match = re.search(r"\((\d+)則評價\)", comments)
-        if match:
-            item["營地資訊"]["評價"] = int(match.group(1))  
  
 
 #清洗獲得星數(0--->NONE) 
@@ -69,13 +60,19 @@ def clean_total_rank(data):
         
 
 
+def main():
+#讀取檔案
+    current_dir = Path(__file__).parent
+    input_path = current_dir.parent /"E"/ "easycamp_info.json"
+    output_path = current_dir / "easycamp_info_cleaned.json"
+    with open(input_path, "r", encoding="utf-8") as file:
+        data = json.load(file)
+    clean_name(data)
+    clean_address(data)
+    clean_altitude(data)
+    clean_total_rank(data)
+    with open(output_path, "w", encoding="utf-8") as f :
+        json.dump(data, f, ensure_ascii=False, indent=2)
 
-
-clean_name(data)
-clean_address(data)
-clean_altitude(data)
-clean_total_rank(data)
-
-
-with open("easycamp_info_cleaned.json", "w", encoding="utf-8") as f :
-    json.dump(data, f, ensure_ascii=False, indent=2)
+if __name__ == "__main__":
+    main()

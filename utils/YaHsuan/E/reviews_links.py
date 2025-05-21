@@ -15,11 +15,9 @@ def get_review_links(campsite_links, headers):
     for link in campsite_links:#從許多露營地完整網址找出評價link
         response = requests.get(link, headers = headers)
         soup = BeautifulSoup(response.text, "html.parser")
-        review_link_tag = soup.find("a",string="住過露友評價") #會是像<a href="...">住過露友評價</a>的tag物件
+        review_link_tag = soup.find("a",string="住過露友評價")                           #會是像<a href="...">住過露友評價</a>的tag物件
         review_links.append (base_url + review_link_tag.get("href"))
-        time.sleep(random.uniform(1, 3)) #每跑完一個露營場頁面、並成功取得它的評論頁網址後，隨機暫停 1～3 秒
-    #print(f"總共有{len(review_links)}個評論網址")
-    #print(f"露營場評論網址為:{review_links}")
+        time.sleep(random.uniform(1, 3))                               #每跑完一個露營場頁面、並成功取得它的評論頁網址後，隨機暫停 1～3 秒
     return review_links
         
 

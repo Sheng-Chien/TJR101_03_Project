@@ -4,17 +4,18 @@ import time
 import random
 from urllib.parse import urljoin
 
-from base import get_city_links
+#from base import get_city_links
+from utils.YaHsuan.E.base import get_city_links
 
 headers = {
         "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"}
 
 def get_campsite_links(city_links, headers):
-    """抓出一個縣市頁面中所有露營場連結""" 
+    """取得一個縣市頁面中所有露營場連結""" 
     campsite_links = []
     base_url = "https://www.easycamp.com.tw"
 
-    for city_url in city_links:# 拿到從 base來的各縣市網址逐一去爬清單
+    for city_url in city_links:# 拿到從各縣市網址逐一去爬清單
         next_page = city_url
         while next_page:
             try:

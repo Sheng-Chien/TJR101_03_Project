@@ -91,7 +91,7 @@ def get_customer_reviews(block):
 
 
 def get_one_place_reviews(link, headers):
-    """獲得單一露營場評分"""
+    """取得單一露營場評論資訊"""
     #all_reviews = []
     base_url = "https://www.easycamp.com.tw"
     #for link in urls:

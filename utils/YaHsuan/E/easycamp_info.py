@@ -4,7 +4,8 @@ import re
 import json
 import time
 from pathlib import Path
-from campsite_links import get_campsite_links,get_city_links
+#from campsite_links import get_campsite_links,get_city_links
+from utils.YaHsuan.E.campsite_links import get_campsite_links, get_city_links
 headers = {
         "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"}
 
@@ -102,7 +103,7 @@ def main():
     headers = {
         "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"}
     camps_data = []
-    city_links = get_city_links(url, headers)[0:-3]
+    city_links = get_city_links(url, headers)
     campsite_links = get_campsite_links(city_links, headers)
     for link in campsite_links:
         data = get_one_place_info(link)
