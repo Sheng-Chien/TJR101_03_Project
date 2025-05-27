@@ -130,11 +130,18 @@ def transform_data(data):
         if "雨棚" not in added_set:
             equipment_standardized.append("雨棚")
             added_set.add("雨棚")
+    #"餐點/咖啡"移到service
     if "餐點/咖啡" in equipment_standardized:
         equipment_standardized.remove("餐點/咖啡")
         if "餐飲服務" not in standardized_service:
             standardized_service.append("餐飲服務")
             added_set.add("餐飲服務")
+    #裝備出租移到service"裝備出租"
+    if "裝備出租" in equipment_standardized:
+        equipment_standardized.remove("裝備出租")
+        if "裝備出租" not in standardized_service:
+            standardized_service.append("裝備出租")
+            added_set.add("裝備出租")
 
 
     # 回傳轉換後結果
