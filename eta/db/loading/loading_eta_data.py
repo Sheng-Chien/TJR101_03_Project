@@ -4,8 +4,7 @@ import json
 from sqlalchemy import create_engine, MetaData, Table, select, insert, update
 from sqlalchemy.sql import and_
 
-
-DATABASE_URL = "mysql+pymysql://test:PassWord_1@104.199.214.113:3307/test2_db"
+DATABASE_URL = "mysql+pymysql://tjr101_g3:PassWord_G3@104.199.214.113:3306/Camping"
 engine = create_engine(DATABASE_URL, echo=False)
 conn = engine.connect()
 metadata = MetaData()
@@ -13,8 +12,8 @@ metadata = MetaData()
 merge_table = Table('campground_merge', metadata, autoload_with=engine)
 campground_table = Table('campground', metadata, autoload_with=engine)
 county_table = Table('county', metadata, autoload_with=engine)
-equipment_table = Table('equipment', metadata, autoload_with=engine)
-service_table = Table('service', metadata, autoload_with=engine)
+# equipment_table = Table('equipment', metadata, autoload_with=engine)
+# service_table = Table('service', metadata, autoload_with=engine)
 camping_site_table = Table('camping_site', metadata, autoload_with=engine)
 
 
@@ -198,15 +197,15 @@ def updateSite(campground_ID, camp):
 
 def main():
     file_path = Path(__file__).parent/"classfied_all.json"
+    file_path = Path(__file__).parent.parent.parent/"transform/results/classfied_all.json"
     with open(file_path, "r", encoding="utf-8") as file:
         camps = json.load(file)
-    
     # 依序處理每個營區
     i = 0
     for camp in camps:
         i+=1
-        if i < 75:
-            continue
+        # if i < 75:
+        #     continue
         print(f"正在處理第 {i} 筆資料")
         camp_name = camp["name"]
         print(camp_name)
@@ -227,11 +226,11 @@ def main():
 
         # updateCampground(campground_ID, camp)
 
-        updateSite(campground_ID, camp)
+        # updateSite(campground_ID, camp)
 
-        # updateEquipment(campground_ID, camp)
+        updateEquipment(campground_ID, camp)
 
-        # updateService(campground_ID, camp)
+        updateService(campground_ID, camp)
 
         # break
 
@@ -239,3 +238,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+conn.close()
