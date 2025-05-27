@@ -5,7 +5,7 @@ from sqlalchemy import create_engine, MetaData, Table, select, insert, update
 from sqlalchemy.sql import and_
 
 
-DATABASE_URL = "mysql+pymysql://test:PassWord_1@104.199.214.113:3307/eta"
+DATABASE_URL = "mysql+pymysql://test:PassWord_1@104.199.214.113:3307/test2_db"
 engine = create_engine(DATABASE_URL, echo=False)
 conn = engine.connect()
 metadata = MetaData()
@@ -222,7 +222,8 @@ def updateSite(campground_ID, camp):
                 conn.commit()
         else:
             # 有資料，作比對後更新
-            if data["price"] > price:# 資料價格較高則不更新
+            if data["price"] > price:# mysql內資料價格較高則不更新
+                print("現有價格資料較高，不更新")
                 continue
             data["price"] = price
             update_table_with_filters(camping_site_table, filters, data)

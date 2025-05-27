@@ -34,10 +34,10 @@ def transform_data(data):
         "寵物友善免裝備露營": "寵物友善",
         "生態導覽": "導覽解說",
         "部落導覽": "導覽解說",
+        "旅遊導覽": "導覽解說",
         "導覽解說": "導覽解說",
         "雲海": "雲海",
         "有雲海": "雲海",
-        "有雨棚": "雨棚",
         "有夜景": "夜景",
         "登山步道": "步道",
         "步道": "步道",
@@ -47,10 +47,15 @@ def transform_data(data):
         "機車露營": "可車露",
         "可車露": "可車露",
         "營區賞螢": "賞螢",
-        "周邊賞螢": "賞螢"
+        "周邊賞螢": "賞螢",
+        "螢火蟲季": "賞螢",
+        "營區採草莓": "果菜採收",
+        "週邊採草莓": "果菜採收",
+        "季節採果": "果菜採收",
+        "餐點/咖啡":"餐飲服務"
     }
 
-    to_remove = {"需注意清潔", "需綁鍊或放置籠內", "需先取得營主同意", "大型狗禁止", "入園需另購門票", "需收寵物清潔費"}
+    to_remove = {"需注意清潔", "需綁鍊或放置籠內", "需先取得營主同意", "大型狗禁止", "入園需另購門票", "需收寵物清潔費","旅遊基地/景點"}
 
     # 標準化 service_items
     standardized_service = []
@@ -78,9 +83,11 @@ def transform_data(data):
         "3G/4G訊號", "中華電信有訊號", "遠傳有訊號", "台哥大有訊號",
         "台灣之星有訊號", "亞太有訊號", "其他家訊號不穩"
     ]
+    #販賣部/販賣機
+    #selling_keywords = ["販賣部/販賣機"]
     fridge_keywords = ["有冰箱", "冷藏", "冷凍"]
-    play_keywords = ["溜滑梯", "鞦韆"]
-    remove_keywords = ["季節賞花", "開心農場", "攀岩", "攀樹", "山訓","塗鴨板", "水瓢"]
+    play_keywords = ["溜滑梯", "鞦韆","玩沙池","戲水池"]
+    remove_keywords = ["季節賞花", "開心農場", "攀岩", "攀樹", "山訓","塗鴨板"]
 
     for item in raw_equipment_items:
         if any(word in item for word in remove_keywords):
@@ -97,6 +104,10 @@ def transform_data(data):
             if "男女浴廁分開" not in added_set:
                 equipment_standardized.append("男女浴廁分開")
                 added_set.add("男女浴廁分開")
+        elif item == "販賣部/販賣機":
+            if "販賣部" not in added_set:
+                equipment_standardized.append("販賣部")
+                added_set.add("男女浴廁分開")
         elif item in play_keywords:
             if "兒童遊樂設施" not in added_set:
                 equipment_standardized.append("兒童遊樂設施")
@@ -105,6 +116,32 @@ def transform_data(data):
             if item not in added_set:
                 equipment_standardized.append(item)
                 added_set.add(item)
+
+    #  移動 "有遊戲設施" 到 equipment 並標準化為 "兒童遊樂設施"
+    if "有遊戲設施" in standardized_service:
+        standardized_service.remove("有遊戲設施")
+        if "兒童遊樂設施" not in added_set:
+            equipment_standardized.append("兒童遊樂設施")
+            added_set.add("兒童遊樂設施")
+
+    #"有雨棚": "雨棚"
+    if "有雨棚" in standardized_service:
+        standardized_service.remove("有雨棚")
+        if "雨棚" not in added_set:
+            equipment_standardized.append("雨棚")
+            added_set.add("雨棚")
+    #"餐點/咖啡"移到service
+    if "餐點/咖啡" in equipment_standardized:
+        equipment_standardized.remove("餐點/咖啡")
+        if "餐飲服務" not in standardized_service:
+            standardized_service.append("餐飲服務")
+            added_set.add("餐飲服務")
+    #裝備出租移到service"裝備出租"
+    if "裝備出租" in equipment_standardized:
+        equipment_standardized.remove("裝備出租")
+        if "裝備出租" not in standardized_service:
+            standardized_service.append("裝備出租")
+            added_set.add("裝備出租")
 
 
     # 回傳轉換後結果
@@ -128,7 +165,7 @@ def main():
     with open(output_path, "w", encoding="utf-8") as f :
         json.dump(transformed_all, f, ensure_ascii=False, indent=2)
 
-    print("✅ 轉換完成")
+    print("✅")
 
 if __name__ == "__main__":
     main()
