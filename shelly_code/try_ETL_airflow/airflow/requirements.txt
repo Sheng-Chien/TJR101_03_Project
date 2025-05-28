@@ -1,0 +1,8 @@
+docker
+selenium
+sqlalchemy
+pymysql
+pandas
+pendulum
+geopy
+rapidfuzz
