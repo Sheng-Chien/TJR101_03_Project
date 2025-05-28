@@ -28,37 +28,25 @@ def main():
     key_path = root_dir / Path("ai/gemini/KEY/AI_Project_User.json")
     file_path = root_dir / Path("crawler/icamping/jsons/camps.jsonl")
     save_dir = Path(__file__).parent / Path("results")
-    # key_path = Path(__file__).parent /Path("ai/gemini/KEY/AI_Project_User.json")
-    # file_path = Path(__file__).parent / Path("crawler/icamping/jsons/camps.jsonl")
-    # save_dir = Path(__file__).parent / Path("results")
     temp_dir = save_dir/"temp"
+
+    start_time = datetime.now()
+
     # 取得已經處理過的檔名
     files = [f.split(".")[0] for f in os.listdir(temp_dir) if os.path.isfile(os.path.join(temp_dir, f))]
     # 召喚AI小幫手
     ai = ChatWithGemini(
         key_path=key_path, # 填入金鑰json檔的路徑(選填))
         max_tonkens=500,
-        temperature=0.5,
+        temperature=0.7,
         top_k=40,
         top_p=0.9,
     )
 
     i=0 # 計數器
-    j=0
     with open(file_path, mode="r", encoding="utf-8") as file:
         for line in file:
             i += 1
-            
-            # # 測試用，跳著選，不要每次都選一樣的
-            # if i % 3 !=0:
-            #     continue
-            # else:
-            #     j += 1
-
-            # 測試用，只執行幾次
-            # if i == 100:
-            #     break
-
 
             # 每個營區都是一行
             camp = json.loads(line)
@@ -66,7 +54,7 @@ def main():
             # checkpoint, 如果檔案已存在則跳過, 執行下一個營區執行下一個營區
             if camp["name"] in files:
                 pass # 如果不重複執行已有的檔案，取消continue的註解
-                continue
+                # continue
             time.sleep(0.5)
 
             # 取出所有設備並清理空白節省token
@@ -89,7 +77,10 @@ def main():
             # 存檔
             with open( json_path, "w", encoding="utf-8") as f:
                 json.dump(response, f, indent=2, ensure_ascii=False)
-                print(f"{camp["name"]} 回應寫入成功！")
+                print(f"{i} {camp["name"]} 回應寫入成功！")
+    
+    end_time = datetime.now()
+    print(f"花費時間：{end_time - start_time}")
 
 
 if __name__ == "__main__":
